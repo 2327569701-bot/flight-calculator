@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Calculator | 飞行计算器</title>
+    <meta name="description" content="傻瓜式飞行计算器，用于模拟飞行中的常见计算：下滑角、TOD、垂直速度等">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">✈️</div>
+                <div>
+                    <div class="logo-text">Flight Calculator</div>
+                    <div class="logo-subtitle">飞行计算器</div>
+                </div>
+            </div>
+            <nav class="nav-tabs" id="navTabs">
+                <!-- 由 JS 动态生成 -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-container">
+        <div id="calculatorContainer">
+            <!-- 由 JS 动态生成 -->
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>Flight Calculator · 专为飞行模拟器设计</p>
+        <p class="footer-note">支持 MSFS / X-Plane</p>
+    </footer>
+
+    <!-- 主程序 -->
+    <script src="js/app.js"></script>
+    <!-- 配置文件管理器 -->
+    <script src="js/profileManager.js"></script>
+    <!-- 单位转换系统 -->
+    <script src="js/unitSystem.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+src-tauri/target/
+*.log
+.DS_Store
+Thumbs.db
+*.bak
+.vscode/
+.idea/
+*.swp
+*.swo

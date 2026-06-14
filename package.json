@@ -1,0 +1,23 @@
+{
+  "name": "flight-calculator",
+  "version": "1.0.0",
+  "description": "傻瓜式飞行计算器 - 支持下滑角、TOD、垂直速度、燃油计算等",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "pack": "electron-builder --dir",
+    "build": "electron-builder"
+  },
+  "author": "残月",
+  "license": "MIT",
+  "devDependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/cli": "^2.11.2",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
