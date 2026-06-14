@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Calculator | 飞行计算器</title>
     <meta name="description" content="傻瓜式飞行计算器，用于模拟飞行中的常见计算：下滑角、TOD、垂直速度等">
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('_themeMode');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : (prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,9 +33,14 @@
                     <div class="logo-subtitle">飞行计算器</div>
                 </div>
             </div>
-            <nav class="nav-tabs" id="navTabs">
-                <!-- 由 JS 动态生成 -->
-            </nav>
+            <div class="header-actions">
+                <nav class="nav-tabs" id="navTabs">
+                    <!-- 由 JS 动态生成 -->
+                </nav>
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换深色模式" aria-pressed="false" title="切换深色模式">
+                    <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+                </button>
+            </div>
         </div>
     </header>
 
