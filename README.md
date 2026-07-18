@@ -59,9 +59,10 @@ npm run build
 
 本项目采用 MIT 开源协议。
 
-## 作者
+## 开发者
 
-**残月**
+残月（win）
+ZhuFenY（ios）
 
 ---
 
