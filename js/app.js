@@ -34,6 +34,67 @@ const DesktopAPI = {
 };
 
 // ============================================================
+// 主题系统
+// ============================================================
+
+const ThemeManager = {
+    STORAGE_KEY: '_themeMode',
+
+    getPreferredTheme() {
+        const savedTheme = localStorage.getItem(this.STORAGE_KEY);
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+            return savedTheme;
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    },
+
+    applyTheme(theme) {
+        const selectedTheme = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', selectedTheme);
+        this.updateToggleButton(selectedTheme);
+    },
+
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        this.applyTheme(nextTheme);
+        localStorage.setItem(this.STORAGE_KEY, nextTheme);
+    },
+
+    bindToggle() {
+        const button = document.getElementById('themeToggle');
+        if (!button || button.dataset.bound === 'true') {
+            return;
+        }
+        button.addEventListener('click', () => this.toggleTheme());
+        button.dataset.bound = 'true';
+    },
+
+    updateToggleButton(theme) {
+        const button = document.getElementById('themeToggle');
+        if (!button) return;
+
+        const icon = button.querySelector('.theme-toggle-icon');
+        const isDark = theme === 'dark';
+        if (icon) {
+            icon.textContent = isDark ? '☀️' : '🌙';
+        }
+        button.setAttribute('aria-pressed', String(isDark));
+        button.setAttribute('title', isDark ? '切换到浅色模式' : '切换到深色模式');
+        button.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
+    },
+
+    init() {
+        const theme = this.getPreferredTheme();
+        this.applyTheme(theme);
+        this.bindToggle();
+    }
+};
+
+// ============================================================
 // 工具函数
 // ============================================================
 
@@ -853,6 +914,7 @@ class FlightCalculatorApp {
     }
 
     init() {
+        ThemeManager.init();
         UnitSystem.init('mixed');
         this.renderNavigation();
         this.renderCalculatorSections();
@@ -1375,6 +1437,8 @@ class FlightCalculatorApp {
     }
 
     bindEvents() {
+        ThemeManager.bindToggle();
+
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const section = e.currentTarget.dataset.section;
@@ -2168,6 +2232,7 @@ style.textContent = `
     padding: 8px 16px;
     border: 1px solid var(--border-color);
     background: var(--bg-input);
+    color: var(--text-primary);
     border-radius: 8px;
     font-size: 13px;
     cursor: pointer;
@@ -2201,6 +2266,11 @@ style.textContent = `
     border-radius: 6px;
     font-size: 13px;
     background: var(--bg-input);
+    color: var(--text-primary);
+}
+.unit-option-row select option {
+    background: var(--bg-card);
+    color: var(--text-primary);
 }
 .preset-list {
     margin-bottom: 16px;
@@ -2240,6 +2310,7 @@ style.textContent = `
     padding: 8px 16px;
     border: 1px solid var(--border-color);
     background: var(--bg-input);
+    color: var(--text-primary);
     border-radius: 8px;
     font-size: 13px;
     cursor: pointer;

@@ -20,8 +20,41 @@
     --text-secondary: #6b7280;
     --text-muted: #9ca3af;
 
+    --nav-hover-bg: rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-tab: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --btn-primary-bg: #1a1a1a;
+    --btn-primary-hover-bg: #333333;
+    --selection-bg: rgba(59, 130, 246, 0.2);
+
     /* 字体 */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+[data-theme='dark'] {
+    --bg-primary: #111317;
+    --bg-secondary: #0b0d10;
+    --bg-card: #151a20;
+    --bg-input: #1b2129;
+    --border-color: #2a323d;
+    --border-hover: #3a4554;
+
+    --accent-primary: #f3f4f6;
+    --accent-secondary: #60a5fa;
+    --accent-success: #34d399;
+    --accent-warning: #fbbf24;
+    --accent-danger: #f87171;
+
+    --text-primary: #f3f4f6;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    --nav-hover-bg: rgba(255, 255, 255, 0.08);
+    --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.28);
+    --shadow-tab: 0 3px 10px rgba(0, 0, 0, 0.28);
+    --btn-primary-bg: #f3f4f6;
+    --btn-primary-hover-bg: #e5e7eb;
+    --selection-bg: rgba(96, 165, 250, 0.35);
 }
 
 * {
@@ -60,6 +93,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .logo {
@@ -117,13 +157,41 @@ body {
 
 .nav-tab:hover {
     color: var(--text-primary);
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--nav-hover-bg);
 }
 
 .nav-tab.active {
     background: var(--bg-primary);
     color: var(--text-primary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-tab);
+}
+
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+}
+
+.theme-toggle:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-input);
+    transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+    transform: translateY(0);
+}
+
+.theme-toggle-icon {
+    font-size: 17px;
 }
 
 /* 主内容区 */
@@ -176,7 +244,7 @@ body {
 
 .card:hover {
     border-color: var(--border-hover);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-card);
 }
 
 .card-header {
@@ -288,10 +356,10 @@ body {
 .btn-calculate {
     width: 100%;
     padding: 12px 24px;
-    background: var(--text-primary);
+    background: var(--btn-primary-bg);
     border: none;
     border-radius: 10px;
-    color: #ffffff;
+    color: var(--bg-secondary);
     font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 500;
@@ -301,7 +369,7 @@ body {
 }
 
 .btn-calculate:hover {
-    background: #333333;
+    background: var(--btn-primary-hover-bg);
     transform: translateY(-1px);
 }
 
@@ -408,8 +476,13 @@ body {
         align-items: flex-start;
     }
 
-    .nav-tabs {
+    .header-actions {
         width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav-tabs {
+        flex: 1;
         overflow-x: auto;
         justify-content: flex-start;
     }
@@ -458,5 +531,5 @@ body {
 
 /* 选中文字 */
 ::selection {
-    background: rgba(59, 130, 246, 0.2);
+    background: var(--selection-bg);
 }
