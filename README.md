@@ -36,19 +36,16 @@ npm install
 npm start
 ```
 
-### 开发
-
-```bash
-# 安装依赖
-npm install
-
-# 开发模式（Electron）
-npm run dev
-
-# 打包桌面应用
-npm run build
-```
-
+### 移动版（iOS）
+本计算器提供了iOS/iPadOS适配
+因迫于苹果对于个人开发者的限制 若需要上架App Store需要向苹果支付99USD每年
+因此项目无任何盈利方式 仅提供以下几种参考安装方式：
+A 使用爱思助手与Apple ID自主签名或使用牛蛙助手签名
+B 使用p12证书设备自签
+C 越狱您的设备并安装appsync插件（不推荐 此方式将破坏您的设备安全性 并可能导致金融/支付类App不可用 若有技术能力可尝试 后果自负）
+#### 移动版（Android）
+     未来开发.....
+     
 ## 技术栈
 
 - Electron + Node.js（桌面版）
