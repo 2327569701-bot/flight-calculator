@@ -1,7 +1,7 @@
 # Flight Calculator | 飞行计算器
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.0-green.svg)
 
 傻瓜式飞行计算器，用于模拟飞行中的常见计算。支持 MSFS / X-Plane。
 
