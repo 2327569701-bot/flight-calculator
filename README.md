@@ -65,7 +65,7 @@ npm run build
   残月（win & 底层开发）
    
    
-  ZhuFenY（ios 开发 & 移动端架构开发）
+  ZhuFenY（ios）
 
 ---
 
