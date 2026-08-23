@@ -1,11 +1,31 @@
+# Dependencies
 node_modules/
-dist/
+
+# Build outputs (binary files)
+*.exe
+*.msi
+*.dmg
+*.app
+*.deb
+*.rpm
+
+# Tauri
 src-tauri/target/
-*.log
-.DS_Store
-Thumbs.db
-*.bak
+src-tauri/gen/
+src-tauri/Cargo.lock
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Screenshots
+screenshot*.png
