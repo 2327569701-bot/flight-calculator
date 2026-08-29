@@ -112,7 +112,7 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 ## 团队
 
 - **残月** - 底层架构设计、桌面版开发
-- **zhufengy** - iOS 版本适配与更新
+- **zhufeny** - iOS 版本适配与更新
 
 ---
 
