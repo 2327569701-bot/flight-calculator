@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Flight Calculator | 飞行计算器</title>
+    <meta name="description" content="专业级飞行计算器，适用于 MSFS / X-Plane">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">✈️</div>
+                <div>
+                    <div class="logo-text">Flight Calculator</div>
+                    <div class="logo-subtitle">飞行计算器</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <nav class="nav-tabs" id="navTabs"></nav>
+                <button
+                    id="themeToggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="切换主题"
+                    aria-pressed="false"
+                    title="切换主题"
+                >
+                    <span class="theme-toggle-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div id="calculatorContainer"></div>
+    </main>
+
+    <script src="js/utils.js"></script>
+    <script src="js/unitSystem.js"></script>
+    <script src="js/profileManager.js"></script>
+    <script src="js/calculators/glideSlope.js"></script>
+    <script src="js/calculators/verticalSpeed.js"></script>
+    <script src="js/calculators/tod.js"></script>
+    <script src="js/calculators/triangle.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
