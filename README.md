@@ -1,6 +1,6 @@
 # Flight Calculator iOS Edition
 
-`Flight Calculator iOS Edition` 是 `Flight Calculator` 的 iOS 版本分支，当前由 `zhufeny` 负责适配与维护。
+Flight Calculator iOS Edition 是 Flight Calculator 的 iOS 版本分支，当前由 zhufeny 负责适配与维护。
 
 这个版本的目标不是继续延续已经基本废弃的 V1 结构，而是在 V2 重构后的思路上，把新的计算逻辑与界面体验带到 iPhone / iPad。
 
