@@ -137,7 +137,35 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .profile-svg text { font: 10px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: var(--muted); }
 .profile-svg .diagram-label { fill: var(--blue); font-size: 11px; font-weight: 600; }
 .profile-svg .gridline { stroke: var(--line); stroke-width: 1; }
-.profile-visual .dynamic-profile { height: auto; aspect-ratio: 440 / 242; margin: 12px 0 0; overflow: hidden; }
+.profile-visual .dynamic-profile { height: auto; aspect-ratio: 440 / 242; margin: 0; overflow: hidden; }
+.diagram-canvas { position: relative; isolation: isolate; margin-top: 16px; border-radius: 16px; overflow: hidden; background: radial-gradient(ellipse at 22% 12%, color-mix(in srgb, var(--blue) 6%, transparent), transparent 68%), linear-gradient(165deg, var(--surface), color-mix(in srgb, var(--diagram-teal) 4%, var(--result))); }
+.diagram-effects { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .55s ease; }
+.profile-visual[data-state="ready"] .diagram-effects { opacity: 1; }
+.diagram-frame { position: absolute; inset: 10px; pointer-events: none; opacity: .25; }
+.diagram-frame::before, .diagram-frame::after { content: ''; position: absolute; width: 10px; height: 10px; border-color: var(--blue); border-style: solid; }
+.diagram-frame::before { top: 0; left: 0; border-width: 1px 0 0 1px; border-radius: 3px 0 0; }
+.diagram-frame::after { bottom: 0; right: 0; border-width: 0 1px 1px 0; border-radius: 0 0 3px; }
+.diagram-target-rings circle { fill: none; stroke: var(--blue); stroke-width: 1; }
+.diagram-trail { fill: none; stroke: var(--diagram-teal); stroke-width: 3; stroke-linecap: round; opacity: .6; }
+.diagram-route-scan { fill: none; stroke: var(--diagram-teal); stroke-width: 3; stroke-linecap: round; }
+.diagram-tracer-glow { fill: var(--blue); opacity: .1; }
+.diagram-tracer-core { fill: var(--surface); stroke: var(--blue); stroke-width: 1; }
+.diagram-station { fill: var(--surface); stroke: var(--blue); stroke-width: 1; opacity: .65; }
+.diagram-approach-light { stroke: var(--diagram-teal); stroke-width: 2; stroke-linecap: round; opacity: .45; }
+.diagram-gauge-rim { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 1 4; }
+.diagram-instrument-hub { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.diagram-compass-tick { stroke: var(--secondary); stroke-width: 1; opacity: .25; }
+.diagram-playback { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 0 14px; }
+.diagram-motion-label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; letter-spacing: .3px; }
+.diagram-motion-label i { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); transition: background .4s, box-shadow .4s; }
+.profile-visual[data-state="ready"][data-paused="false"] .diagram-motion-label i { background: var(--diagram-teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--diagram-teal) 10%, transparent); }
+.diagram-playback > div { display: flex; gap: 4px; }
+.diagram-playback button { border: 1px solid transparent; background: transparent; color: var(--secondary); border-radius: 7px; padding: 5px 8px; font: inherit; font-size: 10px; transition: background .2s, color .2s; }
+.diagram-playback button:hover:not(:disabled) { background: var(--surface); color: var(--blue); border-color: var(--line); }
+.diagram-playback button:disabled { opacity: .4; cursor: default; }
+.diagram-playback button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .diagram-effects { display: none; } }
+@media (pointer: coarse) { .diagram-playback button { min-height: 44px; padding-inline: 10px; } }
 .dynamic-profile text { font-size: 11px; fill: var(--secondary); font-variant-numeric: tabular-nums; }
 .dynamic-profile .diagram-small { font-size: 10px; fill: var(--muted); letter-spacing: .25px; }
 .dynamic-profile .diagram-label { font-size: 12px; fill: var(--blue); font-weight: 600; }
@@ -164,7 +192,7 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .diagram-track { stroke: var(--line); stroke-width: 5; stroke-linecap: round; }
 .diagram-gauge-track { stroke: var(--line); stroke-width: 10; stroke-linecap: round; fill: none; }
 .diagram-gauge-fill { stroke: var(--blue); stroke-width: 10; stroke-linecap: round; fill: none; opacity: .6; }
-.diagram-tick { stroke: var(--muted); stroke-width: 1; stroke-opacity: .6; }
+.diagram-tick { stroke: color-mix(in srgb, var(--blue) calc(var(--tick-lit, 0) * 100%), var(--muted)); stroke-width: 1; stroke-opacity: .7; }
 .diagram-reference-dot { fill: var(--surface); stroke: var(--diagram-teal); stroke-width: 2; }
 .diagram-needle { stroke: var(--blue); stroke-width: 2; stroke-linecap: round; }
 .dynamic-profile .diagram-gauge-value { fill: var(--text); font-size: 19px; font-weight: 550; letter-spacing: -.6px; }
@@ -175,9 +203,9 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .diagram-wind-vector { stroke: var(--blue); stroke-width: 2; }
 .dynamic-profile .diagram-route, .dynamic-profile .diagram-plane, .dynamic-profile .diagram-vector, .dynamic-profile .diagram-wind-vector, .dynamic-profile .diagram-needle { opacity: var(--diagram-ink, 1); }
 .dynamic-profile .diagram-area { opacity: var(--diagram-shade, 1); }
-.diagram-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); padding: 13px 0 10px; gap: 8px; }
-.diagram-metrics > div { padding-left: 11px; border-left: 1px solid var(--line); min-width: 0; }
-.diagram-metrics > div:first-child { padding-left: 0; border-left: 0; }
+.diagram-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 0 10px; gap: 8px; }
+.diagram-metrics > div { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--surface) 65%, transparent); min-width: 0; }
+.diagram-metrics > .is-computed { border-color: color-mix(in srgb, var(--blue) 16%, var(--line)); background: color-mix(in srgb, var(--blue) 4%, var(--surface)); }
 .diagram-metrics span { font-size: 9px; color: var(--muted); display: block; margin-bottom: 3px; }
 .diagram-metrics strong { display: block; font-size: 11px; color: var(--secondary); font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .diagram-metrics .is-computed strong { color: var(--blue); }

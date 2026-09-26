@@ -170,7 +170,7 @@ function calculate() {
   }
   state.results[card.id] = { ...result, inputs: { ...data } };
   renderResult(true);
-  if (window.matchMedia('(max-width: 650px)').matches) $('resultContent').scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  if (window.matchMedia('(max-width: 650px)').matches) $('flightDiagram').scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
 function navigate() {
   const id = location.hash.slice(1);

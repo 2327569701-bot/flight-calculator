@@ -1,7 +1,7 @@
 # Flight Calculator | 飞行计算器 V2
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-2.0.2-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.3-blue.svg)
 
 **专业级飞行计算器** | 适用于 MSFS / X-Plane
 
@@ -32,7 +32,7 @@ V1 版本诞生于学习阶段，代码结构混乱、逻辑纠缠，维护成�
 ### UI 全面升级
 - **macOS 风格布局与轻玻璃设计** - 侧栏导航、参数与结果双栏显示
 - **动态图形** - 下滑剖面、TOD 时间轴、风分量与速度仪表随计算结果更新
-- **平滑过渡动画** - 计算与清零都有缓入缓出，连续操作从当前画面衔接
+- **分层动态预览** - 保留运动速度的平滑过渡、航迹流光、目标呼吸环、仪表刻度及分批显现的读数，支持暂停与重播
 - **系统级深色模式** - 跟随系统自动切换
 - **响应式布局** - 桌面、平板、手机完美适配
 
@@ -105,7 +105,7 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 
 ### 或安装到系统
 
-运行 `Flight-Calculator_2.0.2_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
+运行 `Flight-Calculator_2.0.3_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
 
 ### 从源码构建 Windows 版本
 

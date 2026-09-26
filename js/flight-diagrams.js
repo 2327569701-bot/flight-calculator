@@ -83,6 +83,12 @@
   const dot = (x, y, cls = 'diagram-dot') => `<circle cx="${x}" cy="${y}" r="4" class="${cls}"/>`;
   const plane = (x, y, angle = 0) => `<g class="diagram-plane" transform="translate(${x} ${y}) rotate(${angle})"><path d="M16 0C16-1 14-2 11-2H3L-5-13h-4l4 11h-7l-4-4h-3l3 6-3 6h3l4-4h7l-4 11h4L3 2h8c3 0 5-1 5-2Z"/></g>`;
   const grid = () => [45, 85, 125, 165].map(y => line(44, y, 414, y, 'diagram-grid')).join('') + [72, 132, 192, 252, 312, 372].map(x => line(x, 27, x, 185, 'diagram-grid')).join('');
+  function stations(x1, y1, x2, y2) {
+    return [1, 2, 3].map(i => {
+      const x = x1 + (x2 - x1) * i / 4, y = y1 + (y2 - y1) * i / 4;
+      return `<circle cx="${x}" cy="${y}" r="2.5" class="diagram-station"/>`;
+    }).join('');
+  }
   function horizontalDimension(x1, x2, y, label) {
     return line(x1, y, x2, y, 'diagram-dimension') + line(x1, y - 4, x1, y + 4, 'diagram-dimension') + line(x2, y - 4, x2, y + 4, 'diagram-dimension') + text((x1 + x2) / 2, y + 19, label, 'diagram-dimension-text', 'middle');
   }
@@ -116,6 +122,8 @@
       svg += plane(startX, startY, screenAngle);
     }
     svg += `<path class="diagram-route" data-geometry="slope" d="${slope}" pathLength="1"/>`;
+    svg += stations(startX, startY, endX, baseY);
+    svg += [1, 2, 3, 4].map(i => line(392 - i * 14, 185, 398 - i * 14, 185, 'diagram-approach-light')).join('');
     svg += dot(endX, baseY) + text(402, 166, '目标', 'diagram-small', 'end');
     svg += line(startX - 24, startY, startX - 24, baseY, 'diagram-dimension');
     svg += line(startX - 28, startY, startX - 20, startY, 'diagram-dimension') + line(startX - 28, baseY, startX - 20, baseY, 'diagram-dimension');
@@ -138,6 +146,7 @@
     svg += line(x, y, right, y, 'diagram-vector', 'marker-end="url(#diagram-arrow)"');
     svg += line(right, y, right, arrowY, 'diagram-vector diagram-secondary-vector', 'marker-end="url(#diagram-arrow-soft)"');
     svg += `<path class="diagram-route" data-geometry="slope" d="M${x} ${y}L${right} ${endY}" pathLength="1"/>`;
+    svg += stations(x, y, right, endY);
     svg += line(right, arrowY, right, endY, 'diagram-guide') + plane(x, y, Math.atan2(endY - y, right - x) * 180 / Math.PI) + dot(right, endY);
     svg += text(202, 38, m.ready ? '地速 ' + m.speedText : '地速 —', 'diagram-label', 'middle');
     svg += text(404, 103, '下降率', 'diagram-small', 'end');
@@ -153,6 +162,7 @@
     let svg = grid();
     svg += line(55, 105, 395, 105, 'diagram-track');
     svg += `<path class="diagram-route" data-geometry="timeline" d="M55 105H${end}" pathLength="1"/>`;
+    svg += stations(55, 105, end, 105);
     svg += `<path d="M${end} 105l28 30" class="diagram-guide"/>`;
     svg += plane(55, 105) + dot(end, 105);
     svg += text(55, 77, '当前位置', 'diagram-small');
@@ -175,6 +185,7 @@
     svg += `<path class="diagram-area" d="M63 182L${x} ${y}V182Z"/>`;
     svg += line(63, 29, 63, 182, 'diagram-dimension') + line(63, 182, 403, 182, 'diagram-dimension');
     svg += `<path class="diagram-route" data-geometry="journey" d="M63 182L${x} ${y}" pathLength="1"/>`;
+    svg += stations(63, 182, x, y);
     svg += line(x, y, x, 182, 'diagram-guide') + line(63, y, x, y, 'diagram-guide') + dot(x, y);
     for (let i = 0; i <= 4; i++) {
       const tickX = 63 + 318 * i / 4, tickY = 182 - 132 * i / 4;
@@ -190,11 +201,12 @@
     const max = niceMax(Math.max(m.ready ? m.speed : 160, m.reference || 0) * 1.25);
     const point = (fraction, radius = 94) => ({ x: 220 - Math.cos(Math.PI * fraction) * radius, y: 161 - Math.sin(Math.PI * fraction) * radius });
     let svg = `<path class="diagram-gauge-track" d="M126 161A94 94 0 0 1 314 161"/>`;
+    svg += '<path class="diagram-gauge-rim" d="M139 161A81 81 0 0 1 301 161"/><circle class="diagram-instrument-hub" cx="220" cy="161" r="12"/>';
     const fraction = m.ready ? clamp(motion.speed / max, 0, 1) : 0;
     svg += `<path class="diagram-gauge-fill" d="M126 161A94 94 0 0 1 314 161" pathLength="1" stroke-dasharray="${fraction} 1" style="opacity: ${fraction > 0 ? .6 : 0}"/>`;
     for (let i = 0; i <= 20; i++) {
       const outer = point(i / 20, i % 5 === 0 ? 111 : 107), inner = point(i / 20, 101);
-      svg += line(inner.x, inner.y, outer.x, outer.y, 'diagram-tick');
+      svg += line(inner.x, inner.y, outer.x, outer.y, 'diagram-tick', `style="--tick-lit: ${m.ready && i / 20 <= fraction ? 1 : 0}"`);
       if (i % 5 === 0) { const label = point(i / 20, 128); svg += text(label.x, label.y + 4, m.ready ? format(max / 20 * i, 0) : '—', '', 'middle'); }
     }
     const hasReference = m.ready && Number.isFinite(m.reference);
@@ -212,6 +224,10 @@
     const length = m.ready ? radius * clamp(motion.windSpeed / max, 0, 1) : 0;
     const x = centerX + Math.sin(angle) * length, y = centerY - Math.cos(angle) * length;
     let svg = `<circle cx="220" cy="120" r="77" class="diagram-compass"/><circle cx="220" cy="120" r="39" class="diagram-compass diagram-compass-inner"/>`;
+    for (let i = 0; i < 36; i++) {
+      const a = radians(i * 10), inner = i % 9 === 0 ? 79 : 82;
+      svg += line(220 + Math.sin(a) * inner, 120 - Math.cos(a) * inner, 220 + Math.sin(a) * 87, 120 - Math.cos(a) * 87, 'diagram-compass-tick');
+    }
     svg += line(128, centerY, 312, centerY, 'diagram-guide') + line(centerX, 29, centerX, 211, 'diagram-guide');
     svg += text(centerX, 22, '机头 / 顶风', 'diagram-small', 'middle') + text(centerX, 232, '顺风', 'diagram-small', 'middle');
     svg += text(117, 124, '左侧', 'diagram-small', 'end') + text(324, 124, '右侧', 'diagram-small');
@@ -230,45 +246,137 @@
     return `<svg class="profile-svg dynamic-profile${m.ready ? ' is-ready' : ' is-empty'}" style="--diagram-ink: ${m.ready ? 1 : .25}; --diagram-shade: ${m.ready ? 1 : .4}" viewBox="0 0 440 242" role="img" aria-label="${escape(description)}" data-diagram="${m.cardId}"><defs><linearGradient id="diagram-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".16"/><stop offset="1" stop-color="currentColor" stop-opacity=".025"/></linearGradient><marker id="diagram-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--blue)" stroke-width="1.5"/></marker><marker id="diagram-arrow-soft" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--diagram-teal)" stroke-width="1.5"/></marker></defs>${(drawers[m.kind] || descent)(m, motion)}</svg>`;
   }
   const animations = new WeakMap();
+  const ambientContainers = new Set();
+  let motionPreference, visibilityObserver;
   const numberPattern = /-?(?:\d*\.\d+|\d+)(?:e[+-]?\d+)?/gi;
   const animatedAttributes = new Set(['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'd', 'transform', 'opacity', 'style', 'stroke-dasharray']);
 
   // Use rendered coordinates so adaptive axis changes cannot cause a jump.
   // An interrupted animation starts from the geometry currently on screen.
-  function attributeTween(from, to) {
+  function attributeTween(from, to, previous) {
     if (from === null || from === to || from.replace(numberPattern, '#') !== to.replace(numberPattern, '#')) return null;
     const a = (from.match(numberPattern) || []).map(Number);
     const b = (to.match(numberPattern) || []).map(Number);
     if (!a.length || a.length !== b.length || ![...a, ...b].every(Number.isFinite)) return null;
-    return progress => {
-      let index = 0;
-      return to.replace(numberPattern, () => {
-        const i = index++;
-        return String(a[i] * (1 - progress) + b[i] * progress);
-      });
+    return {
+      positions: a, goals: b,
+      velocities: a.map((_, i) => previous?.velocities[i] || 0),
+      value: () => { let i = 0; return to.replace(numberPattern, () => String(a[i++])); }
     };
   }
+  function effectMarkup() {
+    return `<svg class="diagram-effects" viewBox="0 0 440 242" aria-hidden="true"><path class="diagram-route-scan" opacity="0"/><g class="diagram-target-rings"><circle r="8"/><circle r="16"/></g>${[0, 1, 2].map(() => '<g class="diagram-tracer"><path class="diagram-trail"/><circle class="diagram-tracer-glow" r="6"/><circle class="diagram-tracer-core" r="2"/></g>').join('')}</svg>`;
+  }
+  function stopAmbient(record) {
+    if (record?.effectFrame) cancelAnimationFrame(record.effectFrame);
+    if (record) { record.effectFrame = 0; record.effectTime = null; }
+  }
+  function startAmbient(container) {
+    const record = animations.get(container);
+    if (!record || record.effectFrame || !container.isConnected || document.hidden || record.inView === false || motionPreference.matches || (!record.ready && !record.frame) || (record.paused && !record.frame)) return;
+    const step = now => {
+      record.effectFrame = 0;
+      if (animations.get(container) !== record || !container.isConnected) { ambientContainers.delete(container); return; }
+      if (document.hidden || record.inView === false || motionPreference.matches) { record.effectTime = null; return; }
+      const dt = record.effectTime === null ? 0 : Math.min(50, now - record.effectTime);
+      record.effectTime = now;
+      if (!record.paused) record.phase = (record.phase + dt / 4200) % 1;
+      if (!record.paused) record.reveal = Math.min(1, record.reveal + dt / 1800);
+      const main = container.querySelector('.dynamic-profile');
+      const route = main.querySelector(record.kind === 'gauge' ? '.diagram-gauge-fill' : '[data-geometry]');
+      const total = route.getTotalLength();
+      const fraction = record.kind === 'gauge' ? Number(route.getAttribute('stroke-dasharray').split(' ')[0]) : 1;
+      const point = t => route.getPointAtLength(total * fraction * clamp(t, 0, 1));
+      const scan = container.querySelector('.diagram-route-scan');
+      if (record.reveal < 1) {
+        const extent = 1 - (1 - record.reveal) ** 3;
+        scan.setAttribute('d', Array.from({ length: 17 }, (_, i) => { const p = point(i / 16 * extent); return `${i ? 'L' : 'M'}${p.x} ${p.y}`; }).join(''));
+      }
+      scan.setAttribute('opacity', String(Math.sin(Math.PI * record.reveal) * .65));
+      const end = point(1);
+      const rings = container.querySelector('.diagram-target-rings');
+      rings.setAttribute('transform', `translate(${end.x} ${end.y})`);
+      [...rings.children].forEach((ring, i) => {
+        const p = (record.phase * 2 + i * .5) % 1;
+        ring.setAttribute('r', String(5 + p * 16));
+        ring.setAttribute('opacity', String((1 - p) ** 2 * .5));
+      });
+      container.querySelectorAll('.diagram-tracer').forEach((tracer, i) => {
+        const progress = (record.phase + i / 3) % 1;
+        const t = record.kind === 'wind' ? 1 - progress : progress;
+        const p = point(t), tail = point(t + (record.kind === 'wind' ? .045 : -.045));
+        tracer.setAttribute('opacity', String(Math.sin(Math.PI * progress) ** 2));
+        tracer.querySelector('path').setAttribute('d', `M${tail.x} ${tail.y}L${p.x} ${p.y}`);
+        tracer.querySelectorAll('circle').forEach(dot => { dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); });
+      });
+      if ((record.ready && !record.paused) || record.frame) record.effectFrame = requestAnimationFrame(step);
+      else record.effectTime = null;
+    };
+    record.effectFrame = requestAnimationFrame(step);
+  }
+  function setupMotion(container) {
+    if (!motionPreference) {
+      motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+      const update = () => ambientContainers.forEach(el => {
+        const record = animations.get(el);
+        if (!record) return;
+        updatePlayback(el, record);
+        if (motionPreference.matches) record.details?.forEach(animation => animation.cancel());
+        if (document.hidden || motionPreference.matches) stopAmbient(record);
+        else startAmbient(el);
+      });
+      motionPreference.addEventListener('change', update);
+      document.addEventListener('visibilitychange', update);
+      visibilityObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+        const record = animations.get(entry.target);
+        if (!record) return;
+        record.inView = entry.isIntersecting;
+        if (record.inView) startAmbient(entry.target); else stopAmbient(record);
+      }));
+    }
+    ambientContainers.forEach(el => { if (!el.isConnected) { stopAmbient(animations.get(el)); visibilityObserver.unobserve(el); ambientContainers.delete(el); } });
+    if (!ambientContainers.has(container)) { ambientContainers.add(container); visibilityObserver.observe(container); }
+  }
   function render(container, next, animate = false) {
+    setupMotion(container);
     const previous = animations.get(container);
     if (previous?.frame) cancelAnimationFrame(previous.frame);
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    stopAmbient(previous);
+    previous?.details?.forEach(animation => animation.cancel());
+    const reducedMotion = motionPreference;
     const sameCard = previous?.cardId === next.cardId;
-    const record = { cardId: next.cardId, frame: 0 };
+    const record = { cardId: next.cardId, kind: next.kind, ready: next.ready, model: next, frame: 0, channels: new Map(), phase: previous?.phase || 0, reveal: 1, paused: previous?.paused || false, inView: previous?.inView, effectFrame: 0, effectTime: null };
     animations.set(container, record);
     container.dataset.state = next.ready ? 'ready' : 'empty';
     delete container.dataset.animating;
     // Preserve the canvas and SVG nodes across calculate, edit and reset.
-    if (!sameCard) container.innerHTML = '<div class="profile-heading"></div><div class="diagram-canvas"></div><div class="diagram-metrics"></div><p class="diagram-caption"></p>';
+    if (!sameCard) {
+      container.innerHTML = `<div class="profile-heading"></div><div class="diagram-canvas"><div class="diagram-drawing"></div>${effectMarkup()}<span class="diagram-frame" aria-hidden="true"></span></div><div class="diagram-playback"><span class="diagram-motion-label"><i></i>动态示意</span><div><button type="button" class="diagram-pause" aria-pressed="false">暂停动效</button><button type="button" class="diagram-replay">↻ 重播</button></div></div><div class="diagram-metrics"></div><p class="diagram-caption"></p>`;
+      container.querySelector('.diagram-pause').addEventListener('click', () => {
+        const active = animations.get(container);
+        active.paused = !active.paused;
+        updatePlayback(container, active);
+        if (active.paused) stopAmbient(active); else startAmbient(container);
+      });
+      container.querySelector('.diagram-replay').addEventListener('click', () => {
+        const active = animations.get(container);
+        active.paused = false;
+        active.phase = 0;
+        render(container, active.model, true);
+      });
+    }
     container.querySelector('.profile-heading').innerHTML = `<span>${escape(next.title)}</span><small class="diagram-sync${next.ready ? ' synced' : ''}">${escape(next.status)}</small>`;
     container.querySelector('.diagram-metrics').innerHTML = (next.metrics.length ? next.metrics : [metric('参数', '—'), metric('读数', '—'), metric('结果', '—')]).map(item => `<div${item.computed ? ' class="is-computed"' : ''}><span>${escape(item.label)}</span><strong title="${escape(item.value)}">${escape(item.value)}</strong></div>`).join('');
     container.querySelector('.diagram-caption').textContent = next.caption;
-    const canvas = container.querySelector('.diagram-canvas');
+    updatePlayback(container, record);
+    const canvas = container.querySelector('.diagram-drawing');
     const template = document.createElement('template');
     template.innerHTML = svg(next);
     const target = template.content.firstElementChild;
     const current = canvas.firstElementChild;
     if (!current || !sameCard) {
       canvas.replaceChildren(target);
+      startAmbient(container);
       return;
     }
     const tweens = [];
@@ -279,27 +387,62 @@
     targetNodes.forEach((node, index) => {
       const source = sourceNodes[index];
       for (const { name, value } of node.attributes) {
-        const tween = shouldAnimate && animatedAttributes.has(name) ? attributeTween(source.getAttribute(name), value) : null;
-        if (tween) tweens.push({ source, name, value, tween });
+        const key = `${index}:${name}`;
+        const tween = shouldAnimate && animatedAttributes.has(name) ? attributeTween(source.getAttribute(name), value, previous?.channels.get(key)) : null;
+        if (tween) { tweens.push({ source, name, value, tween }); record.channels.set(key, tween); }
         else if (source.getAttribute(name) !== value) source.setAttribute(name, value);
       }
       // Labels immediately describe the current result while its geometry settles.
       if (!node.children.length && source.textContent !== node.textContent) source.textContent = node.textContent;
     });
-    if (!tweens.length) return;
+    if (shouldAnimate && next.ready) animateDetails(container, record);
+    if (!tweens.length) { startAmbient(container); return; }
     container.dataset.animating = 'true';
-    const start = performance.now();
-    const duration = next.ready ? 900 : 750;
+    let last = performance.now(), elapsed = 0;
+    const omega = next.ready ? 11 : 13;
     const step = now => {
       if (!container.isConnected || animations.get(container) !== record) return;
-      const progress = reducedMotion.matches ? 1 : Math.min((now - start) / duration, 1);
-      // Ease both ends, with zero velocity and acceleration at rest.
-      const eased = progress ** 3 * (progress * (progress * 6 - 15) + 10);
-      for (const { source, name, value, tween } of tweens) source.setAttribute(name, progress === 1 ? value : tween(eased));
-      if (progress < 1) record.frame = requestAnimationFrame(step);
-      else { record.frame = 0; delete container.dataset.animating; }
+      const dt = Math.max(0, Math.min((now - last) / 1000, .05));
+      last = now; elapsed += dt;
+      let settled = true;
+      // Analytic critically damped springs retain velocity when retargeted.
+      // They are independent of display refresh rate and do not bounce past results.
+      for (const { source, name, tween } of tweens) {
+        tween.positions.forEach((position, i) => {
+          const offset = position - tween.goals[i], velocity = tween.velocities[i];
+          const c = velocity + omega * offset, decay = Math.exp(-omega * dt);
+          tween.positions[i] = tween.goals[i] + (offset + c * dt) * decay;
+          tween.velocities[i] = (velocity - omega * c * dt) * decay;
+          if (Math.abs(tween.positions[i] - tween.goals[i]) > .001 || Math.abs(tween.velocities[i]) > .01) settled = false;
+        });
+        source.setAttribute(name, tween.value());
+      }
+      if (!reducedMotion.matches && !settled && elapsed < 2.4) record.frame = requestAnimationFrame(step);
+      else {
+        for (const { source, name, value } of tweens) source.setAttribute(name, value);
+        record.channels.clear(); record.frame = 0; delete container.dataset.animating;
+      }
     };
     record.frame = requestAnimationFrame(step);
+    startAmbient(container);
+  }
+  function updatePlayback(container, record) {
+    const pause = container.querySelector('.diagram-pause');
+    pause.textContent = record.paused ? '继续流动' : '暂停流动';
+    pause.setAttribute('aria-pressed', String(record.paused));
+    pause.disabled = !record.ready || motionPreference.matches;
+    container.querySelector('.diagram-replay').disabled = !record.ready || motionPreference.matches;
+    container.querySelector('.diagram-motion-label').lastChild.textContent = motionPreference.matches ? '静态示意' : record.paused ? '示意已暂停' : '动态示意';
+    container.dataset.paused = String(record.paused);
+  }
+  function animateDetails(container, record) {
+    record.details = [];
+    const groups = [container.querySelectorAll('.diagram-label, .diagram-angle, .diagram-gauge-value'), container.querySelectorAll('.diagram-metrics > div')];
+    groups.forEach((nodes, group) => nodes.forEach((node, i) => {
+      record.details.push(node.animate([{ opacity: .2, translate: `0 ${group ? 6 : 3}px` }, { opacity: 1, translate: '0 0' }], { duration: 700, delay: 70 + i * 65 + group * 80, fill: 'backwards', easing: 'cubic-bezier(.22, 1, .36, 1)' }));
+    }));
+    record.details.push(container.querySelector('.diagram-canvas').animate([{ boxShadow: 'inset 0 0 0 1px rgba(45, 124, 246, .22)' }, { boxShadow: 'inset 0 0 0 1px rgba(45, 124, 246, 0)' }], { duration: 1400, easing: 'ease-out' }));
+    record.reveal = 0;
   }
   const api = { model, svg, render, format };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

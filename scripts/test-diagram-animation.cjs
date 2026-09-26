@@ -69,7 +69,7 @@ const server = http.createServer((req, res) => {
       const intermediate = await page.evaluate(() => animationSnapshot());
       assert.notEqual(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), initialGeometry);
       assert.notEqual(intermediate, target, 'must pass through intermediate geometry');
-      await page.clock.runFor(650);
+      await page.clock.runFor(2200);
       assert.equal(await page.evaluate(() => animationSnapshot()), target);
       const calculatedGeometry = await page.locator('[data-geometry]').evaluate(el => el.outerHTML);
       await page.evaluate(() => document.querySelector('#resetInputs').click());
@@ -78,7 +78,7 @@ const server = http.createServer((req, res) => {
       await page.clock.runFor(250);
       assert.notEqual(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), calculatedGeometry);
       assert.notEqual(await page.evaluate(() => animationSnapshot()), resetTarget);
-      await page.clock.runFor(550);
+      await page.clock.runFor(2200);
       assert.equal(await page.evaluate(() => animationSnapshot()), resetTarget);
       assert.equal(await page.evaluate(() => originalSvg === document.querySelector('#flightDiagram svg')), true, 'SVG must stay mounted');
       console.log(`PASS ${section}/${mode}: calculate + reset intermediate frames and exact endpoints`);
@@ -106,7 +106,7 @@ const server = http.createServer((req, res) => {
       assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), before, `interrupted ${action} must preserve visible geometry`);
       await page.clock.runFor(120);
     }
-    await page.clock.runFor(1000);
+    await page.clock.runFor(2500);
     assert.equal(await page.evaluate(() => animationSnapshot()), await page.evaluate(() => animationSnapshot(true)));
     console.log('PASS interruptions: reset, edit and recalculate continue from the displayed frame');
     // The timeline changes its adaptive axis from 20 to 80 minutes.
@@ -117,12 +117,29 @@ const server = http.createServer((req, res) => {
       state.results.t2 = { ok: true, val: '72 分钟', inputs: { dist2: 540, gs2: 450 } }; renderResult(true);
     });
     assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), await page.evaluate(() => beforeScale));
-    await page.clock.runFor(1000);
+    await page.clock.runFor(2500);
     assert.equal(await page.evaluate(() => animationSnapshot()), await page.evaluate(() => animationSnapshot(true)));
+    const settled = await page.evaluate(() => animationSnapshot());
+    const flowing = await page.locator('.diagram-effects').evaluate(el => el.innerHTML);
+    await page.clock.runFor(200);
+    assert.notEqual(await page.locator('.diagram-effects').evaluate(el => el.innerHTML), flowing, 'ambient flow should continue after geometry settles');
+    await page.evaluate(() => document.querySelector('.diagram-pause').click());
+    const paused = await page.locator('.diagram-effects').evaluate(el => el.innerHTML);
+    await page.clock.runFor(500);
+    assert.equal(await page.locator('.diagram-effects').evaluate(el => el.innerHTML), paused, 'pause must freeze continuous effects');
+    await page.evaluate(() => document.querySelector('.diagram-replay').click());
+    await page.clock.runFor(350);
+    assert.notEqual(await page.locator('.diagram-effects').evaluate(el => el.innerHTML), paused);
+    assert.ok(Number(await page.locator('.diagram-route-scan').getAttribute('opacity')) > .1, 'replay should retrace the route');
+    assert.equal(await page.evaluate(() => animationSnapshot()), settled, 'replaying effects must not alter results or geometry');
+    assert.equal(await page.locator('.diagram-pause').getAttribute('aria-pressed'), 'false');
+    console.log('PASS continuous flow, pause and replay without changing computed data');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.evaluate(() => document.querySelector('#resetInputs').click());
     assert.equal(await page.evaluate(() => animationSnapshot()), await page.evaluate(() => animationSnapshot(true)));
     assert.equal(await page.locator('#flightDiagram').getAttribute('data-animating'), null);
+    assert.equal(await page.locator('.diagram-effects').evaluate(el => getComputedStyle(el).display), 'none');
+    assert.equal(await page.locator('.diagram-pause').isDisabled(), true);
     assert.deepEqual(errors, []);
     console.log('PASS adaptive scale continuity, reduced motion and no page errors');
   } finally { await browser.close(); }
