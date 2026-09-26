@@ -1,7 +1,7 @@
 # Flight Calculator | 飞行计算器 V2
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)
 
 **专业级飞行计算器** | 适用于 MSFS / X-Plane
 
@@ -27,10 +27,11 @@ V1 版本诞生于学习阶段，代码结构混乱、逻辑纠缠，维护成�
 - **VAPP 进近速度计算** - 波音737-800算法，含风修正和阵风修正
 - **风分量计算** - 自动分解顶风/顺风/侧风
 - **VREF 参考值查询** - 根据重量和襟翼快速估算
-- **FCOM 手册查询** - 内置PDF阅读器 + 快捷搜索
+- **飞行手册** - 本地 PDF 导入、阅读与已有 FCOM 参考摘录
 
 ### UI 全面升级
-- **iOS 风格玻璃拟态设计** - 现代化视觉体验
+- **macOS 风格布局与轻玻璃设计** - 侧栏导航、参数与结果双栏显示
+- **动态图形** - 下滑剖面、TOD 时间轴、风分量与速度仪表随计算结果更新
 - **系统级深色模式** - 跟随系统自动切换
 - **响应式布局** - 桌面、平板、手机完美适配
 
@@ -69,7 +70,7 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 | TOD | 高度差 → 最佳下降点距离/时机 |
 | 三角计算 | 速度/距离/时间，任意两值求第三值 |
 | VAPP | VREF+风修正+阵风 → 进近速度 |
-| 手册 | 内置FCOM手册，快捷查询 |
+| 手册 | 导入本地 PDF，查看已有 FCOM 参考摘录 |
 
 ---
 
@@ -89,13 +90,35 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 
 ## 运行方式
 
+### 预览当前 UI
+
+直接用浏览器打开 `index.html`，即可预览当前界面。支持浅色 / 深色主题、响应式导航和本地 PDF 手册导入。
+
+修改前端后执行 `npm run build:web`，将入口、样式和脚本同步至 Tauri 使用的 `dist` 目录。`npm run tauri:build` 会先自动执行这一步，再生成桌面安装包；已有 EXE 不会随源码修改而自动更新。
+
 ### Windows 直接运行
 
-双击 `Flight Calculator V2.exe` 即可运行
+从 [GitHub Releases](https://github.com/2327569701-bot/flight-calculator/releases/latest) 下载 `Flight-Calculator-V2.exe`，双击即可运行，无需启动网页服务器或安装 Node.js。
+
+本地项目目录中的程序名为 `Flight Calculator V2.exe`；`启动飞行计算器.bat` 和 `npm start` 也会启动它。程序使用 Windows WebView2 Runtime。
 
 ### 或安装到系统
 
-运行 `Flight Calculator_2.0.0_x64-setup.exe` 安装
+运行 `Flight-Calculator_2.0.1_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
+
+### 从源码构建 Windows 版本
+
+安装 Node.js、Rust 和 Visual Studio C++ 构建工具后执行：
+
+```sh
+npm install
+npm run test:diagrams
+npm run tauri:build -- --bundles nsis
+```
+
+独立程序位于 `src-tauri/target/release/flight-calculator.exe`，安装包位于 `src-tauri/target/release/bundle/nsis/`。构建时会自动将最新前端同步到 `dist`。
+
+请保留仓库中的 `src-tauri/Cargo.lock`：它固定了已验证的依赖版本，包括与 Brotli 兼容的分配器版本。
 
 ---
 

@@ -1,10 +1,10 @@
 [package]
-name = "app"
-version = "0.1.0"
+name = "flight-calculator"
+version = "2.0.1"
 description = "Flight Calculator - A simple flight calculation tool"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["残月"]
+license = "MIT"
+repository = "https://github.com/2327569701-bot/flight-calculator"
 edition = "2021"
 rust-version = "1.77.2"
 

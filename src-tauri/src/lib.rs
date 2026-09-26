@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PresetData {
@@ -79,7 +78,7 @@ fn list_presets(subdir: &str) -> Vec<serde_json::Value> {
                     if let Ok(data) = serde_json::from_str::<PresetData>(&content) {
                         presets.push(serde_json::json!({
                             "name": data.name,
-                            "key": entry.file_stem().unwrap_or_default().to_string_lossy(),
+                            "key": entry.path().file_stem().unwrap_or_default().to_string_lossy(),
                             "savedAt": data.saved_at
                         }));
                     }

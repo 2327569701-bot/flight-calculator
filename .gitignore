@@ -12,7 +12,7 @@ node_modules/
 # Tauri
 src-tauri/target/
 src-tauri/gen/
-src-tauri/Cargo.lock
+artifacts/
 
 # IDE
 .vscode/
