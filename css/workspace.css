@@ -173,8 +173,8 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .diagram-projection { stroke: var(--diagram-teal); stroke-width: 1; stroke-dasharray: 3 3; stroke-opacity: .65; }
 .diagram-component { stroke: var(--diagram-teal); stroke-width: 2; stroke-opacity: .65; }
 .diagram-wind-vector { stroke: var(--blue); stroke-width: 2; }
-.dynamic-profile.is-empty .diagram-route, .dynamic-profile.is-empty .diagram-plane, .dynamic-profile.is-empty .diagram-vector, .dynamic-profile.is-empty .diagram-wind-vector, .dynamic-profile.is-empty .diagram-needle { opacity: .25; }
-.dynamic-profile.is-empty .diagram-area { opacity: .4; }
+.dynamic-profile .diagram-route, .dynamic-profile .diagram-plane, .dynamic-profile .diagram-vector, .dynamic-profile .diagram-wind-vector, .dynamic-profile .diagram-needle { opacity: var(--diagram-ink, 1); }
+.dynamic-profile .diagram-area { opacity: var(--diagram-shade, 1); }
 .diagram-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); padding: 13px 0 10px; gap: 8px; }
 .diagram-metrics > div { padding-left: 11px; border-left: 1px solid var(--line); min-width: 0; }
 .diagram-metrics > div:first-child { padding-left: 0; border-left: 0; }
@@ -182,10 +182,6 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .diagram-metrics strong { display: block; font-size: 11px; color: var(--secondary); font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .diagram-metrics .is-computed strong { color: var(--blue); }
 .diagram-caption { color: var(--muted); font-size: 9px; line-height: 1.8; padding-bottom: 15px; }
-.diagram-reveal { animation: diagram-appear .45s ease-out both; }
-.diagram-reveal .diagram-route { stroke-dasharray: 1; animation: diagram-route-reveal .8s ease-out both; }
-@keyframes diagram-appear { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes diagram-route-reveal { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 .result-content { padding: 24px 27px; flex: 1; display: flex; flex-direction: column; }
 .result-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .result-label { font-size: 11px; color: var(--secondary); }

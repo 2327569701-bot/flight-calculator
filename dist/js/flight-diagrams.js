@@ -97,7 +97,7 @@
     const startX = m.cardId === 't1' ? 132 : 84, endX = 392, baseY = 176;
     const angle = m.ready ? motion.angle : 3;
     // A monotonic schematic scale keeps shallow and steep approaches distinguishable.
-    const rise = 12 + 116 * angle / (angle + 2);
+    const rise = m.ready ? 12 + 116 * angle / (angle + 2) : 0;
     const startY = baseY - rise;
     const screenAngle = Math.atan2(rise, endX - startX) * 180 / Math.PI;
     const slope = `M${startX} ${startY}L${endX} ${baseY}`;
@@ -131,8 +131,8 @@
     const angle = m.ready ? motion.angle : 3;
     const rate = m.ready ? motion.rate : 0;
     const x = 80, y = 59, right = 327;
-    const endY = y + 24 + 98 * angle / (angle + 3);
-    const arrowY = 102 + 69 * (rate / (rate + 1000));
+    const endY = m.ready ? y + 24 + 98 * angle / (angle + 3) : y;
+    const arrowY = m.ready ? 102 + 69 * (rate / (rate + 1000)) : y;
     let svg = grid();
     svg += `<path class="diagram-area" d="M${x} ${y}H${right}V${endY}Z"/>`;
     svg += line(x, y, right, y, 'diagram-vector', 'marker-end="url(#diagram-arrow)"');
@@ -149,7 +149,7 @@
   function timeline(m, motion) {
     const minutes = m.ready ? m.minutes : 0;
     const max = niceMax(minutes * 1.15);
-    const end = m.ready ? 55 + clamp(motion.minutes / max, 0, 1) * 330 : 320;
+    const end = m.ready ? 55 + clamp(motion.minutes / max, 0, 1) * 330 : 55;
     let svg = grid();
     svg += line(55, 105, 395, 105, 'diagram-track');
     svg += `<path class="diagram-route" data-geometry="timeline" d="M55 105H${end}" pathLength="1"/>`;
@@ -169,8 +169,8 @@
   }
   function journey(m, motion) {
     const maxTime = niceMax(m.ready ? m.minutes * 1.15 : 60), maxDistance = niceMax(m.ready ? m.distance * 1.15 : 100);
-    const x = m.ready ? 63 + 318 * clamp(motion.minutes / maxTime, 0, 1) : 338;
-    const y = m.ready ? 182 - 132 * clamp(motion.distance / maxDistance, 0, 1) : 65;
+    const x = m.ready ? 63 + 318 * clamp(motion.minutes / maxTime, 0, 1) : 63;
+    const y = m.ready ? 182 - 132 * clamp(motion.distance / maxDistance, 0, 1) : 182;
     let svg = grid();
     svg += `<path class="diagram-area" d="M63 182L${x} ${y}V182Z"/>`;
     svg += line(63, 29, 63, 182, 'diagram-dimension') + line(63, 182, 403, 182, 'diagram-dimension');
@@ -190,20 +190,17 @@
     const max = niceMax(Math.max(m.ready ? m.speed : 160, m.reference || 0) * 1.25);
     const point = (fraction, radius = 94) => ({ x: 220 - Math.cos(Math.PI * fraction) * radius, y: 161 - Math.sin(Math.PI * fraction) * radius });
     let svg = `<path class="diagram-gauge-track" d="M126 161A94 94 0 0 1 314 161"/>`;
-    const fraction = m.ready ? clamp(motion.speed / max, 0, 1) : .5;
-    const end = point(fraction);
-    if (m.ready && fraction > 0) svg += `<path class="diagram-gauge-fill" d="M126 161A94 94 0 0 1 ${end.x} ${end.y}"/>`;
+    const fraction = m.ready ? clamp(motion.speed / max, 0, 1) : 0;
+    svg += `<path class="diagram-gauge-fill" d="M126 161A94 94 0 0 1 314 161" pathLength="1" stroke-dasharray="${fraction} 1" style="opacity: ${fraction > 0 ? .6 : 0}"/>`;
     for (let i = 0; i <= 20; i++) {
       const outer = point(i / 20, i % 5 === 0 ? 111 : 107), inner = point(i / 20, 101);
       svg += line(inner.x, inner.y, outer.x, outer.y, 'diagram-tick');
       if (i % 5 === 0) { const label = point(i / 20, 128); svg += text(label.x, label.y + 4, m.ready ? format(max / 20 * i, 0) : '—', '', 'middle'); }
     }
-    if (m.ready && m.reference !== null) {
-      const ref = point(clamp(m.reference / max, 0, 1));
-      svg += `<circle cx="${ref.x}" cy="${ref.y}" r="5" class="diagram-reference-dot"><title>VREF ${escape(amount(m.reference, 'kts'))}</title></circle>`;
-    }
-    const needle = point(fraction, 68);
-    svg += line(220, 161, needle.x, needle.y, 'diagram-needle', 'data-geometry="needle"') + dot(220, 161);
+    const hasReference = m.ready && Number.isFinite(m.reference);
+    const referenceAngle = hasReference ? clamp(m.reference / max, 0, 1) * 180 : 0;
+    svg += `<circle cx="126" cy="161" r="5" transform="rotate(${referenceAngle} 220 161)" opacity="${hasReference ? 1 : 0}" class="diagram-reference-dot"><title>${hasReference ? 'VREF ' + escape(amount(m.reference, 'kts')) : ''}</title></circle>`;
+    svg += line(220, 161, 152, 161, 'diagram-needle', `data-geometry="needle" transform="rotate(${fraction * 180} 220 161)"`) + dot(220, 161);
     svg += text(220, 199, (m.gaugeLabel || (m.cardId === 'vapp1' ? 'VAPP' : 'VREF')) + ' · ' + (m.ready ? amount(m.speed, 'kts') : '—'), 'diagram-gauge-value', 'middle');
     svg += text(220, 227, m.cardId === 'vapp1' ? '○ VREF 参考点   /   指针：VAPP' : '指针：当前重量与襟翼对应的 VREF', 'diagram-small', 'middle');
     return svg;
@@ -212,7 +209,7 @@
     const centerX = 220, centerY = 120, radius = 77;
     const angle = radians(m.ready ? motion.angle : 30);
     const max = niceMax(m.ready ? m.windSpeed : 20);
-    const length = m.ready ? radius * clamp(motion.windSpeed / max, 0, 1) : 55;
+    const length = m.ready ? radius * clamp(motion.windSpeed / max, 0, 1) : 0;
     const x = centerX + Math.sin(angle) * length, y = centerY - Math.cos(angle) * length;
     let svg = `<circle cx="220" cy="120" r="77" class="diagram-compass"/><circle cx="220" cy="120" r="39" class="diagram-compass diagram-compass-inner"/>`;
     svg += line(128, centerY, 312, centerY, 'diagram-guide') + line(centerX, 29, centerX, 211, 'diagram-guide');
@@ -230,39 +227,77 @@
   const drawers = { descent, vertical, timeline, journey, gauge, wind };
   function svg(m, motion = m) {
     const description = `${m.title}，${m.status}。${m.metrics.map(item => item.label + ' ' + item.value).join('，')}。${m.caption}`;
-    return `<svg class="profile-svg dynamic-profile${m.ready ? ' is-ready' : ' is-empty'}" viewBox="0 0 440 242" role="img" aria-label="${escape(description)}" data-diagram="${m.cardId}"><defs><linearGradient id="diagram-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".16"/><stop offset="1" stop-color="currentColor" stop-opacity=".025"/></linearGradient><marker id="diagram-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--blue)" stroke-width="1.5"/></marker><marker id="diagram-arrow-soft" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--diagram-teal)" stroke-width="1.5"/></marker></defs>${(drawers[m.kind] || descent)(m, motion)}</svg>`;
+    return `<svg class="profile-svg dynamic-profile${m.ready ? ' is-ready' : ' is-empty'}" style="--diagram-ink: ${m.ready ? 1 : .25}; --diagram-shade: ${m.ready ? 1 : .4}" viewBox="0 0 440 242" role="img" aria-label="${escape(description)}" data-diagram="${m.cardId}"><defs><linearGradient id="diagram-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".16"/><stop offset="1" stop-color="currentColor" stop-opacity=".025"/></linearGradient><marker id="diagram-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--blue)" stroke-width="1.5"/></marker><marker id="diagram-arrow-soft" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--diagram-teal)" stroke-width="1.5"/></marker></defs>${(drawers[m.kind] || descent)(m, motion)}</svg>`;
   }
   const animations = new WeakMap();
-  const numericFields = ['angle', 'rate', 'minutes', 'distance', 'speed', 'windSpeed'];
+  const numberPattern = /-?(?:\d*\.\d+|\d+)(?:e[+-]?\d+)?/gi;
+  const animatedAttributes = new Set(['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'd', 'transform', 'opacity', 'style', 'stroke-dasharray']);
+
+  // Use rendered coordinates so adaptive axis changes cannot cause a jump.
+  // An interrupted animation starts from the geometry currently on screen.
+  function attributeTween(from, to) {
+    if (from === null || from === to || from.replace(numberPattern, '#') !== to.replace(numberPattern, '#')) return null;
+    const a = (from.match(numberPattern) || []).map(Number);
+    const b = (to.match(numberPattern) || []).map(Number);
+    if (!a.length || a.length !== b.length || ![...a, ...b].every(Number.isFinite)) return null;
+    return progress => {
+      let index = 0;
+      return to.replace(numberPattern, () => {
+        const i = index++;
+        return String(a[i] * (1 - progress) + b[i] * progress);
+      });
+    };
+  }
   function render(container, next, animate = false) {
     const previous = animations.get(container);
     if (previous?.frame) cancelAnimationFrame(previous.frame);
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    const before = previous?.lastValid;
-    // Keep the last valid geometry only for tweening; edited/invalid states never display old data.
-    const from = before?.ready && before.cardId === next.cardId ? before : null;
-    const record = { lastValid: next.ready ? next : before, frame: 0 };
+    const sameCard = previous?.cardId === next.cardId;
+    const record = { cardId: next.cardId, frame: 0 };
     animations.set(container, record);
     container.dataset.state = next.ready ? 'ready' : 'empty';
-    container.innerHTML = `<div class="profile-heading"><span>${escape(next.title)}</span><small class="diagram-sync${next.ready ? ' synced' : ''}">${escape(next.status)}</small></div><div class="diagram-canvas">${svg(next)}</div><div class="diagram-metrics">${(next.metrics.length ? next.metrics : [metric('参数', '—'), metric('读数', '—'), metric('结果', '—')]).map(item => `<div${item.computed ? ' class="is-computed"' : ''}><span>${escape(item.label)}</span><strong title="${escape(item.value)}">${escape(item.value)}</strong></div>`).join('')}</div><p class="diagram-caption">${escape(next.caption)}</p>`;
+    delete container.dataset.animating;
+    // Preserve the canvas and SVG nodes across calculate, edit and reset.
+    if (!sameCard) container.innerHTML = '<div class="profile-heading"></div><div class="diagram-canvas"></div><div class="diagram-metrics"></div><p class="diagram-caption"></p>';
+    container.querySelector('.profile-heading').innerHTML = `<span>${escape(next.title)}</span><small class="diagram-sync${next.ready ? ' synced' : ''}">${escape(next.status)}</small>`;
+    container.querySelector('.diagram-metrics').innerHTML = (next.metrics.length ? next.metrics : [metric('参数', '—'), metric('读数', '—'), metric('结果', '—')]).map(item => `<div${item.computed ? ' class="is-computed"' : ''}><span>${escape(item.label)}</span><strong title="${escape(item.value)}">${escape(item.value)}</strong></div>`).join('');
+    container.querySelector('.diagram-caption').textContent = next.caption;
     const canvas = container.querySelector('.diagram-canvas');
-    if (!animate || !next.ready || reducedMotion.matches) return;
-    if (!from) {
-      canvas.classList.add('diagram-reveal');
+    const template = document.createElement('template');
+    template.innerHTML = svg(next);
+    const target = template.content.firstElementChild;
+    const current = canvas.firstElementChild;
+    if (!current || !sameCard) {
+      canvas.replaceChildren(target);
       return;
     }
-    let start;
+    const tweens = [];
+    const sourceNodes = [current, ...current.querySelectorAll('*')];
+    const targetNodes = [target, ...target.querySelectorAll('*')];
+    const shouldAnimate = animate && !reducedMotion.matches;
+    // Drawers keep the same SVG structure, including hidden gauge markers.
+    targetNodes.forEach((node, index) => {
+      const source = sourceNodes[index];
+      for (const { name, value } of node.attributes) {
+        const tween = shouldAnimate && animatedAttributes.has(name) ? attributeTween(source.getAttribute(name), value) : null;
+        if (tween) tweens.push({ source, name, value, tween });
+        else if (source.getAttribute(name) !== value) source.setAttribute(name, value);
+      }
+      // Labels immediately describe the current result while its geometry settles.
+      if (!node.children.length && source.textContent !== node.textContent) source.textContent = node.textContent;
+    });
+    if (!tweens.length) return;
+    container.dataset.animating = 'true';
+    const start = performance.now();
+    const duration = next.ready ? 900 : 750;
     const step = now => {
       if (!container.isConnected || animations.get(container) !== record) return;
-      start ??= now;
-      const progress = reducedMotion.matches ? 1 : Math.min((now - start) / 550, 1);
-      const eased = 1 - (1 - progress) ** 3;
-      const motion = { ...next };
-      numericFields.forEach(key => {
-        if (Number.isFinite(from[key]) && Number.isFinite(next[key])) motion[key] = from[key] * (1 - eased) + next[key] * eased;
-      });
-      canvas.innerHTML = svg(next, motion);
+      const progress = reducedMotion.matches ? 1 : Math.min((now - start) / duration, 1);
+      // Ease both ends, with zero velocity and acceleration at rest.
+      const eased = progress ** 3 * (progress * (progress * 6 - 15) + 10);
+      for (const { source, name, value, tween } of tweens) source.setAttribute(name, progress === 1 ? value : tween(eased));
       if (progress < 1) record.frame = requestAnimationFrame(step);
+      else { record.frame = 0; delete container.dataset.animating; }
     };
     record.frame = requestAnimationFrame(step);
   }

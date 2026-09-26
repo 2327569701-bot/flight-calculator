@@ -1,7 +1,7 @@
 # Flight Calculator | 飞行计算器 V2
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.2-blue.svg)
 
 **专业级飞行计算器** | 适用于 MSFS / X-Plane
 
@@ -32,6 +32,7 @@ V1 版本诞生于学习阶段，代码结构混乱、逻辑纠缠，维护成�
 ### UI 全面升级
 - **macOS 风格布局与轻玻璃设计** - 侧栏导航、参数与结果双栏显示
 - **动态图形** - 下滑剖面、TOD 时间轴、风分量与速度仪表随计算结果更新
+- **平滑过渡动画** - 计算与清零都有缓入缓出，连续操作从当前画面衔接
 - **系统级深色模式** - 跟随系统自动切换
 - **响应式布局** - 桌面、平板、手机完美适配
 
@@ -104,7 +105,7 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 
 ### 或安装到系统
 
-运行 `Flight-Calculator_2.0.1_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
+运行 `Flight-Calculator_2.0.2_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
 
 ### 从源码构建 Windows 版本
 
@@ -119,6 +120,8 @@ npm run tauri:build -- --bundles nsis
 独立程序位于 `src-tauri/target/release/flight-calculator.exe`，安装包位于 `src-tauri/target/release/bundle/nsis/`。构建时会自动将最新前端同步到 `dist`。
 
 请保留仓库中的 `src-tauri/Cargo.lock`：它固定了已验证的依赖版本，包括与 Brotli 兼容的分配器版本。
+
+图形动画回归检查：先运行 `npx playwright install chromium`，再执行 `npm run test:animation`。检查覆盖 9 个模式的计算与清零、中途重新计算、刻度变化及减少动态效果设置。也可以设置 `PLAYWRIGHT_CHANNEL=msedge` 使用已安装的 Edge。
 
 ---
 

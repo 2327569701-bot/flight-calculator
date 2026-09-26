@@ -108,9 +108,15 @@ function renderMain() {
     });
   });
   $('calculatorForm').addEventListener('submit', event => { event.preventDefault(); calculate(); });
-  $('calculatorForm').addEventListener('input', () => { captureDraft(); delete state.results[card.id]; renderResult(); });
+  $('calculatorForm').addEventListener('input', () => { captureDraft(); delete state.results[card.id]; renderResult(true); });
   $('resetInputs').addEventListener('click', () => {
-    delete state.drafts[card.id]; delete state.results[card.id]; renderMain();
+    delete state.drafts[card.id]; delete state.results[card.id];
+    card.inputs.forEach(input => {
+      const field = $(`${card.id}-${input.id}`);
+      field.value = input.def ?? (input.type === 'select' ? input.vals[0] : '');
+      field.removeAttribute('aria-invalid');
+    });
+    renderResult(true);
     $('calculatorForm').querySelector('input, select')?.focus();
   });
 }
