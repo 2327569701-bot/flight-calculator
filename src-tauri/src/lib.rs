@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use tauri::Manager;
+
+const CHARTFOX_URL: &str = "https://chartfox.org/";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PresetData {
@@ -137,6 +140,40 @@ fn open_profiles_folder() -> Result<String, String> {
     Ok(profiles_dir.to_string_lossy().to_string())
 }
 
+// The ChartFox page uses a separate webview without application permissions.
+#[tauri::command]
+async fn open_chartfox_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("chartfox") {
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    let profile_dir = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("chartfox-webview");
+    fs::create_dir_all(&profile_dir).map_err(|e| e.to_string())?;
+    let url = tauri::Url::parse(CHARTFOX_URL).map_err(|e| e.to_string())?;
+    let window =
+        tauri::WebviewWindowBuilder::new(&app, "chartfox", tauri::WebviewUrl::External(url))
+            .title("ChartFox 航图 | 飞行计算器")
+            .inner_size(1120.0, 780.0)
+            .min_inner_size(760.0, 540.0)
+            .center()
+            .data_directory(profile_dir)
+            .build()
+            .map_err(|e| e.to_string())?;
+    window.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn open_chartfox_browser() -> Result<(), String> {
+    open::that(CHARTFOX_URL).map_err(|e| e.to_string())
+}
+
 fn sanitize_filename(name: &str) -> String {
     name.chars()
         .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' || c == ' ' { c } else { '_' })
@@ -189,6 +226,8 @@ pub fn run() {
             delete_preset,
             export_all,
             open_profiles_folder,
+            open_chartfox_window,
+            open_chartfox_browser,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

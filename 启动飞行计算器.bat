@@ -1,6 +1,10 @@
 @echo off
 title Flight Calculator
 cd /d "%~dp0"
+if exist "Flight Calculator V3.1.exe" (
+    start "" "Flight Calculator V3.1.exe"
+    exit /b 0
+)
 if exist "Flight Calculator V3.exe" (
     start "" "Flight Calculator V3.exe"
     exit /b 0

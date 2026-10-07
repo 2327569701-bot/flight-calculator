@@ -1,6 +1,6 @@
 {
   "productName": "Flight Calculator",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "identifier": "com.flightcalc.desktop",
   "build": {
     "frontendDist": "../dist",
@@ -9,6 +9,7 @@
     "beforeBuildCommand": "npm run build:web"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Flight Calculator | 飞行计算器",

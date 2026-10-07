@@ -9,6 +9,7 @@ const ICONS = {
   tri: '<path d="m4 19 8-14 8 14H4Z"/><path d="M9 19v-4H6"/>',
   vapp: '<path d="M4 17a9 9 0 1 1 16 0M12 13l5-5M4 13h2m12 0h2M12 4v2"/><circle cx="12" cy="13" r="2"/>',
   manual: '<path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Zm0 0v15"/>',
+  charts: '<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20V6.5Z"/><path d="M9 4v13.5M15 6.5V20"/>',
   settings: '<path d="m9 3-.5 3-2 1.2L4 6l-2 3 2.5 2v2L2 15l2 3 2.5-1.2 2 1.2.5 3h4l.5-3 2-1.2L18 18l2-3-2.5-2v-2L20 9l-2-3-2.5 1.2-2-1.2-.5-3H9Z"/><circle cx="11" cy="12" r="3"/>',
   sliders: '<path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -37,6 +38,7 @@ const META = {
   atmo: { title: '大气 · 空速', short: '大气·空速', en: 'ATMOSPHERE & AIRSPEED', tag: 'ATMO', desc: '压力高度、密度高度与真实空速，把天气与高度换算清楚。', modes: ['压力高度', '密度高度', '真实空速'], labels: ['压力高度', '密度高度', '真实空速'], note: '压力高度由 QNH 与机场标高求得；密度高度按 ISA 偏差估算（约每 °C 119 ft）；真实空速采用每千英尺约 2% 的经验修正、忽略压缩性，仅供模拟飞行参考。' },
   vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: 'VAPP 风修正规则及下方参考摘录尚待与适用的 B737-800 手册核对，仅供模拟飞行；不可用于实际飞行。' },
   manual: { title: '飞行手册', short: '飞行手册', en: 'FLIGHT LIBRARY', tag: 'FCOM', desc: '常用参考随手可查，专注每一个飞行阶段。' },
+  charts: { title: '在线航图', short: '在线航图', en: 'CHARTFOX', tag: 'CHARTS', desc: '在飞行计算器中打开 ChartFox，使用自己的 VATSIM 账号查阅航图。' },
   history: { title: '历史记录', short: '历史记录', en: 'CALCULATION HISTORY', tag: 'HIST', desc: '本次飞行算过的内容都在这里，可复制、导出或打印。' }
 };
 const INPUT_HINTS = {
@@ -227,7 +229,11 @@ function renderHistoryPage() {
 function renderNav() {
   const items = CALCULATOR_SECTIONS.map((section, i) => `${i === 5 ? '<div class="nav-divider"></div>' : ''}<a class="nav-item${state.section === section.id ? ' active' : ''}" href="#${section.id}" ${state.section === section.id ? 'aria-current="page"' : ''} title="${META[section.id].short}">${icon(section.id)}<span class="nav-label">${META[section.id].short}</span><span class="nav-en">${META[section.id].tag}</span></a>`).join('');
   const historyItem = `<div class="nav-divider"></div><a class="nav-item${state.section === 'history' ? ' active' : ''}" href="#history" ${state.section === 'history' ? 'aria-current="page"' : ''} title="历史记录">${icon('history')}<span class="nav-label">历史记录</span><span class="nav-en">HIST</span></a>`;
-  $('nav').innerHTML = items + historyItem;
+  const chartsItem = `<div class="nav-divider"></div><a class="nav-item${state.section === 'charts' ? ' active' : ''}" href="#charts" ${state.section === 'charts' ? 'aria-current="page"' : ''} title="在线航图">${icon('charts')}<span class="nav-label">在线航图</span><span class="nav-en">CHARTS</span></a>`;
+  $('nav').innerHTML = items + chartsItem + historyItem;
+  $('nav').querySelector('[href="#charts"]').addEventListener('click', () => {
+    if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
+  });
   $('breadcrumbCurrent').textContent = META[state.section].short;
   $('unitSummary').textContent = unitName();
 }
@@ -250,8 +256,50 @@ function fieldMarkup(input, card) {
 function referenceMarkup(open = false) {
   return `<details class="manual-reference"${open ? ' open' : ''}><summary>待核对的进近速度参考摘录</summary><div class="manual-content"><p><strong>校核提示：</strong>以下规则不是已核实的 B737-800 FCOM。当前顺风修正的说明与计算结果符号也不一致；仅供模拟飞行，不可用于实际飞行。</p>${MANUAL_CONTENT}</div></details>`;
 }
+const CHARTFOX_URL = 'https://chartfox.org/';
+async function openChartfox() {
+  if (!window.__TAURI__?.core?.invoke) {
+    window.open(CHARTFOX_URL, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  const button = $('openChartfox');
+  if (button) button.disabled = true;
+  try {
+    await window.__TAURI__.core.invoke('open_chartfox_window');
+  } catch (error) {
+    console.error('ChartFox webview could not open:', error);
+    toast('内置航图窗口未能打开，请使用浏览器入口');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+async function openChartfoxBrowser() {
+  if (!window.__TAURI__?.core?.invoke) {
+    window.open(CHARTFOX_URL, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  try {
+    await window.__TAURI__.core.invoke('open_chartfox_browser');
+  } catch (error) {
+    console.error('ChartFox browser fallback could not open:', error);
+    toast('浏览器未能打开');
+  }
+}
+function renderChartsPage() {
+  const desktop = !!window.__TAURI__?.core?.invoke;
+  $('main').innerHTML =
+    '<div class="page-heading"><div><span class="eyebrow">CHARTFOX</span><h1>在线航图</h1><p class="page-description">使用自己的 VATSIM 账号，在 ChartFox 官网查阅航图。</p></div><div class="section-symbol">' + icon('charts') + '</div></div>' +
+    '<section class="panel charts-panel"><div class="charts-visual">' + icon('charts') + '<span>CHARTFOX</span></div><div class="charts-copy"><span class="eyebrow">ONLINE CHARTS</span><h2>航图就在工作台旁边</h2>' +
+    '<p>ChartFox 将在' + (desktop ? '飞行计算器的独立窗口' : '浏览器') + '中打开。登录与航图查看都在 ChartFox 官网完成，飞行计算器不会读取你的账号密码或复制航图。</p>' +
+    '<div class="charts-actions"><button type="button" class="button button-primary" id="openChartfox">' + icon('charts') + (desktop ? '打开航图窗口' : '打开 ChartFox') + '</button>' +
+    (desktop ? '<button type="button" class="button button-secondary" id="openChartfoxBrowser">' + icon('arrow') + '在浏览器打开</button>' : '') + '</div>' +
+    '<p class="charts-note">由 ChartFox 提供的第三方服务，仅供模拟飞行。部分航图若无法在内置窗口显示，可使用浏览器入口。</p></div></section>';
+  $('openChartfox').addEventListener('click', openChartfox);
+  if (desktop) $('openChartfoxBrowser').addEventListener('click', openChartfoxBrowser);
+}
 function renderMain() {
   if (state.section === 'history') { renderHistoryPage(); return; }
+  if (state.section === 'charts') { renderChartsPage(); return; }
   const meta = META[state.section];
   const section = currentSection();
   const card = currentCard();
@@ -363,6 +411,7 @@ function navigate() {
   captureDraft();
   state.section = META[id] ? id : 'glide';
   renderNav(); renderMain();
+  if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
 }
 function openSettings() {
   state.settings = JSON.parse(JSON.stringify(UnitSystem.current));

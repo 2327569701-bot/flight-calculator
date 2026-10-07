@@ -245,6 +245,17 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .library-copy p { font-size: 12px; color: var(--secondary); margin-bottom: 20px; max-width: 460px; }
 .library-copy .button { margin-right: 7px; }
 .library-note { font-size: 10px; color: var(--muted); margin-top: 15px; }
+.charts-panel { display: grid; grid-template-columns: minmax(180px, .42fr) 1fr; align-items: stretch; }
+.charts-visual { min-height: 270px; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #fff; background: radial-gradient(circle at 28% 24%, #98b9ed 0, transparent 50%), linear-gradient(145deg, #225497, #122c55); }
+.charts-visual svg { width: 82px; height: 82px; stroke-width: 1.1; opacity: .9; }
+.charts-visual span { font-size: 11px; font-weight: 700; letter-spacing: 3px; opacity: .82; }
+.charts-copy { padding: 35px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+.charts-copy h2 { font-size: 19px; margin-bottom: 10px; }
+.charts-copy > p:not(.charts-note) { max-width: 510px; font-size: 12px; line-height: 1.9; color: var(--secondary); }
+.charts-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 14px; }
+.charts-actions .button { display: inline-flex; align-items: center; gap: 7px; }
+.charts-actions svg { width: 16px; height: 16px; }
+.charts-note { max-width: 520px; font-size: 10px; line-height: 1.7; color: var(--muted); }
 dialog { color: var(--text); padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 24px 100px #132c5e30; max-height: calc(100dvh - 40px); }
 dialog::backdrop { background: #1a2b4b3d; backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
 .settings-dialog { width: min(480px, calc(100% - 32px)); }
@@ -307,6 +318,10 @@ dialog::backdrop { background: #1a2b4b3d; backdrop-filter: blur(7px); -webkit-ba
   .nav-item svg { width: 18px; height: 18px; }
   .nav-item.active { background: var(--blue-soft); box-shadow: none; border-color: transparent; }
   .app-content { padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
+  .charts-panel { grid-template-columns: 1fr; }
+  .charts-visual { min-height: 130px; }
+  .charts-visual svg { width: 48px; height: 48px; }
+  .charts-copy { padding: 24px; }
   .topbar { height: 62px; padding: 0 19px; gap: 10px; }
   .breadcrumb { gap: 7px; font-size: 10px; }
   .breadcrumb > [data-icon], .toolbar-divider { display: none; }

@@ -1,9 +1,19 @@
-# Flight Calculator | 飞行计算器 V3
+# Flight Calculator | 飞行计算器 V3.1
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)
 
 **专业级飞行计算器** | 适用于 MSFS / X-Plane
+
+---
+
+## V3.1 做了什么？
+
+- **新增在线航图入口** - 桌面版在飞行计算器的独立窗口中打开 ChartFox 官网；网页版在新标签页打开。
+- **沿用 VATSIM 登录** - 账号认证和航图查看均由 ChartFox 官网处理，程序不读取密码，也不抓取或内置航图。
+- **提供浏览器入口** - 部分航图若无法在内置窗口显示，可直接切换到系统浏览器。
+
+ChartFox 是第三方服务，与本项目没有隶属关系。航图仅供模拟飞行；请遵守 [ChartFox 使用条款](https://chartfox.org/legal/terms)。
 
 ---
 
@@ -88,6 +98,7 @@ Tauri 基于 Rust + WebView2，轻量且可靠。
 | VAPP | VREF+风修正+阵风 → 进近速度；风分量；VREF 查询 |
 | 历史记录 | 自动保存计算，复制 / 导出 JSON·CSV / 打印 |
 | 手册 | 导入本地 PDF，查看已有 FCOM 参考摘录 |
+| 在线航图 | 在应用独立窗口中打开 ChartFox 官网，可切换到系统浏览器 |
 
 ---
 
@@ -116,17 +127,13 @@ VAPP 沿用了旧版未经适用 B737-800 手册核实的风修正规则。当�
 
 直接用浏览器打开 `index.html`，即可预览当前界面。支持浅色 / 深色主题、响应式导航、本地 PDF 手册导入与历史记录。
 
-修改前端后执行 `npm run build:web`，将入口、样式和脚本同步至 Tauri 使用的 `dist` 目录（会先清空再拷贝）。`npm run tauri:build` 会先自动执行这一步，再生成桌面安装包；已有 EXE 不会随源码修改而自动更新。
+修改前端后执行 `npm run build:web`，将入口、样式和脚本同步至 Tauri 使用的 `dist` 目录（会先清空再拷贝）。`npm run tauri:build -- --no-bundle` 会先自动执行这一步，再生成独立 EXE；已有 EXE 不会随源码修改而自动更新。
 
 ### Windows 直接运行
 
-从 [GitHub Releases](https://github.com/2327569701-bot/flight-calculator/releases/latest) 下载 `Flight Calculator V3.exe`，双击即可运行，无需启动网页服务器或安装 Node.js。
+从 [GitHub Releases](https://github.com/2327569701-bot/flight-calculator/releases/latest) 下载 `Flight-Calculator-V3.1.exe`，双击即可运行，无需启动网页服务器或安装 Node.js。
 
-本地项目目录中的程序名为 `Flight Calculator V3.exe`；`启动飞行计算器.bat` 和 `npm start` 也会启动它（找不到 V3 时回退到 V2）。程序使用 Windows WebView2 Runtime。
-
-### 或安装到系统
-
-运行 `Flight-Calculator_3.0.0_x64-setup.exe` 安装。安装包会检测并安装所需的 WebView2 Runtime。
+本地项目目录中的程序名为 `Flight Calculator V3.1.exe`；`启动飞行计算器.bat` 和 `npm start` 也会启动它（找不到 V3.1 时回退到旧版）。程序使用 Windows WebView2 Runtime。
 
 ### 从源码构建 Windows 版本
 
@@ -135,10 +142,10 @@ VAPP 沿用了旧版未经适用 B737-800 手册核实的风修正规则。当�
 ```sh
 npm install
 npm run test:diagrams
-npm run tauri:build -- --bundles nsis
+npm run tauri:build -- --no-bundle
 ```
 
-独立程序位于 `src-tauri/target/release/flight-calculator.exe`，安装包位于 `src-tauri/target/release/bundle/nsis/`。构建时会自动将最新前端同步到 `dist`。
+独立程序位于 `src-tauri/target/release/flight-calculator.exe`。构建时会自动将最新前端同步到 `dist`。
 
 请保留仓库中的 `src-tauri/Cargo.lock`：它固定了已验证的依赖版本。
 
@@ -152,7 +159,8 @@ npm run tauri:build -- --bundles nsis
 |------|------|------|
 | V1 | 初版，存在问题 | ❌ 废弃 |
 | V2 | 全面重构，桌面版 | ✅ 完成 |
-| V3 | 清理死代码、大气·空速、历史与导出 | ✅ 当前 |
+| V3 | 清理死代码、大气·空速、历史与导出 | ✅ 完成 |
+| V3.1 | ChartFox 在线航图入口 | ✅ 当前 |
 | V3 For iOS | iOS 原生 App | 🔄 开发中 |
 | 未来 | 多机型档案（接线已有 Rust 预设命令） | 📋 计划中 |
 
