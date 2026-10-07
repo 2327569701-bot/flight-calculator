@@ -1,6 +1,6 @@
 {
   "productName": "Flight Calculator",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "identifier": "com.flightcalc.desktop",
   "build": {
     "frontendDist": "../dist",

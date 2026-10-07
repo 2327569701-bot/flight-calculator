@@ -4,10 +4,11 @@
   const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
   const radians = degrees => degrees / 180 * Math.PI;
+  const numberFormatters = [0, 1].map(maximumFractionDigits => new Intl.NumberFormat('en-US', { maximumFractionDigits }));
   const format = (value, digits = 1) => {
     if (!Number.isFinite(value)) return '—';
     if (Math.abs(value) >= 1e7 || (value !== 0 && Math.abs(value) < .01)) return value.toExponential(1);
-    return new Intl.NumberFormat('en-US', { maximumFractionDigits: digits }).format(value);
+    return (numberFormatters[digits] || new Intl.NumberFormat('en-US', { maximumFractionDigits: digits })).format(value);
   };
   const amount = (value, unit = '', digits = 1) => `${format(value, digits)}${unit ? ' ' + unit : ''}`;
   const metric = (label, value, unit = '', computed = false) => ({ label, value: typeof value === 'number' ? amount(value, unit) : value, computed });

@@ -359,8 +359,18 @@ function captureDraft() {
   card.inputs.forEach(input => { state.drafts[card.id][input.id] = $(`${card.id}-${input.id}`).value; });
 }
 function changeMode(mode) {
-  captureDraft(); state.modes[state.section] = mode; renderMain();
-  document.querySelector('[role="tab"][aria-selected="true"]').focus();
+  if (mode === (state.modes[state.section] || 0)) return;
+  cancelNavMotion();
+  const panel = $('calculatorPanel');
+  const animate = panel && !reducedMotion() && typeof panel.animate === 'function';
+  const oldRect = animate ? panel.getBoundingClientRect() : null;
+  const oldAnchor = animate ? document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect() : null;
+  captureDraft();
+  const update = () => { state.modes[state.section] = mode; renderMain(); document.querySelector('[role="tab"][aria-selected="true"]').focus(); };
+  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), panel, 560, null, () => $('calculatorPanel'))) return;
+  const ghost = animate ? panel.cloneNode(true) : null;
+  update();
+  if (animate) animateNavigation(ghost, oldRect, oldAnchor, document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), $('calculatorPanel'), 560);
 }
 function renderResult(animate = false) {
   const card = currentCard();
@@ -405,17 +415,249 @@ function calculate() {
   renderResult(true);
   if (window.matchMedia('(max-width: 650px)').matches) $('flightDiagram').scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let navMotion = null;
+function ballTransform(pageRect, anchorRect, size = 42) {
+  const dx = anchorRect.left + anchorRect.width / 2 - pageRect.left - pageRect.width / 2;
+  const dy = anchorRect.top + anchorRect.height / 2 - pageRect.top - pageRect.height / 2;
+  const sx = size / pageRect.width, sy = size / pageRect.height;
+  return { dx, dy, sx, sy, value: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` };
+}
+function navAnchor(section) {
+  return document.querySelector(`#nav a[href="#${section}"] svg`)?.getBoundingClientRect();
+}
+function cancelNavMotion() {
+  if (!navMotion) return;
+  const motion = navMotion;
+  navMotion = null;
+  if (motion.kind === 'view') {
+    motion.transition?.skipTransition();
+    motion.nodes.forEach(node => node.remove());
+    motion.main.style.viewTransitionName = motion.previousName;
+    document.documentElement.style.removeProperty('--liquid-duration');
+    for (const name of ['old-offset', 'old-size', 'new-offset', 'new-size', 'orb-old-offset', 'orb-old-size', 'orb-new-offset', 'orb-new-size']) document.documentElement.style.removeProperty(`--liquid-${name}`);
+    return;
+  }
+  motion.animations.forEach(animation => animation.cancel());
+  motion.nodes.forEach(node => node.remove());
+  if (motion.mainStyle === null) motion.main.removeAttribute('style');
+  else motion.main.setAttribute('style', motion.mainStyle);
+  motion.main.inert = motion.wasInert;
+}
+function flightOrb(rect) {
+  const orb = document.createElement('div');
+  orb.className = 'nav-flight-orb';
+  Object.assign(orb.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+  orb.setAttribute('aria-hidden', 'true');
+  document.body.append(orb);
+  return orb;
+}
+function transitionOrb(anchor, name, size = 42) {
+  const orb = document.createElement('div');
+  orb.className = 'liquid-transition-orb';
+  orb.style.viewTransitionName = name;
+  Object.assign(orb.style, { left: `${anchor.left + anchor.width / 2 - size / 2}px`, top: `${anchor.top + anchor.height / 2 - size / 2}px`, width: `${size}px`, height: `${size}px` });
+  orb.setAttribute('aria-hidden', 'true');
+  orb.inert = true;
+  document.body.append(orb);
+  return orb;
+}
+function animateNavigation(ghost, oldRect, oldAnchor, newAnchor, main = $('main'), duration = 760, onComplete) {
+  const newRect = main.getBoundingClientRect();
+  if (!oldAnchor || !newAnchor || !oldRect.width || !oldRect.height || !newRect.width || !newRect.height) return false;
+  const outgoing = ballTransform(oldRect, oldAnchor);
+  const incoming = ballTransform(newRect, newAnchor);
+  ghost.removeAttribute('id');
+  ghost.classList.add('nav-flight-ghost');
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.inert = true;
+  Object.assign(ghost.style, { left: `${oldRect.left}px`, top: `${oldRect.top}px`, width: `${oldRect.width}px`, height: `${oldRect.height}px` });
+  document.body.append(ghost);
+  const oldOrb = flightOrb(oldRect);
+  const newOrb = flightOrb(newRect);
+  const mainStyle = main.getAttribute('style');
+  const wasInert = main.inert;
+  Object.assign(main.style, { opacity: '0', overflow: 'hidden', background: 'var(--bg)', transformOrigin: 'center center', willChange: 'transform, opacity' });
+  main.inert = true;
+  const animate = (element, frames, easing = 'linear') => element.animate(frames, { duration, easing, fill: 'both' });
+  const oldFlight = 'cubic-bezier(.55, .02, .35, 1)';
+  const oldShape = 'cubic-bezier(.2, .6, .28, 1)';
+  const newFlight = 'cubic-bezier(.18, .58, .3, 1)';
+  const newShape = 'cubic-bezier(.52, .02, .2, 1)';
+  const oldOffset = `${outgoing.dx}px ${outgoing.dy}px`;
+  const oldSize = `${outgoing.sx} ${outgoing.sy}`;
+  const newOffset = `${incoming.dx}px ${incoming.dy}px`;
+  const newSize = `${incoming.sx} ${incoming.sy}`;
+  const animations = [
+    animate(ghost, [{ translate: '0 0' }, { translate: oldOffset }], oldFlight),
+    animate(ghost, [{ scale: '1', borderRadius: '0px' }, { scale: oldSize, borderRadius: '999px' }], oldShape),
+    animate(ghost, [{ opacity: 1, offset: 0 }, { opacity: .66, offset: .22 }, { opacity: 0, offset: .44 }, { opacity: 0, offset: 1 }]),
+    animate(oldOrb, [{ translate: '0 0' }, { translate: oldOffset }], oldFlight),
+    animate(oldOrb, [{ scale: '1' }, { scale: oldSize }], oldShape),
+    animate(oldOrb, [{ opacity: .08, offset: 0 }, { opacity: .48, offset: .24 }, { opacity: .55, offset: .52 }, { opacity: .48, offset: .82 }, { opacity: 0, offset: 1 }]),
+    animate(newOrb, [{ translate: newOffset }, { translate: '0 0' }], newFlight),
+    animate(newOrb, [{ scale: newSize }, { scale: '1' }], newShape),
+    animate(newOrb, [{ opacity: .9, offset: 0 }, { opacity: .52, offset: .22 }, { opacity: .17, offset: .42 }, { opacity: 0, offset: .68 }, { opacity: 0, offset: 1 }]),
+    animate(main, [{ translate: newOffset }, { translate: '0 0' }], newFlight),
+    animate(main, [{ scale: newSize, borderRadius: '999px' }, { scale: '1', borderRadius: '0px' }], newShape),
+    animate(main, [{ opacity: 0, offset: 0 }, { opacity: .08, offset: .18 }, { opacity: .57, offset: .34 }, { opacity: 1, offset: .6 }, { opacity: 1, offset: 1 }])
+  ];
+  const motion = { animations, nodes: [ghost, oldOrb, newOrb], main, mainStyle, wasInert };
+  navMotion = motion;
+  Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
+    if (navMotion !== motion) return;
+    cancelNavMotion();
+    onComplete?.();
+  });
+  return true;
+}
+function startViewNavigation(update, oldRect, oldAnchor, getNewAnchor, main, duration, onComplete, getNewMain = () => main) {
+  if (!document.startViewTransition || !oldAnchor || !oldRect.width || !oldRect.height) return false;
+  const previousName = main.style.viewTransitionName;
+  main.style.viewTransitionName = 'liquid-page';
+  const oldOrb = transitionOrb(oldAnchor, 'liquid-orb-out');
+  const root = document.documentElement;
+  const motion = { kind: 'view', main, previousName, transition: null, nodes: [oldOrb] };
+  navMotion = motion;
+  motion.transition = document.startViewTransition(() => {
+    if (navMotion !== motion) return;
+    oldOrb.remove();
+    update();
+    const newMain = getNewMain();
+    if (newMain !== main) {
+      motion.main = newMain;
+      motion.previousName = newMain.style.viewTransitionName;
+      newMain.style.viewTransitionName = 'liquid-page';
+    }
+    const newRect = newMain.getBoundingClientRect();
+    const newAnchor = getNewAnchor();
+    if (!newAnchor || !newRect.width || !newRect.height) return;
+    const outgoing = ballTransform(oldRect, oldAnchor);
+    const incoming = ballTransform(newRect, newAnchor);
+    motion.nodes.push(transitionOrb(newAnchor, 'liquid-orb-in'));
+    root.style.setProperty('--liquid-duration', `${duration}ms`);
+    root.style.setProperty('--liquid-old-offset', `${outgoing.dx}px ${outgoing.dy}px`);
+    root.style.setProperty('--liquid-old-size', `${outgoing.sx} ${outgoing.sy}`);
+    root.style.setProperty('--liquid-new-offset', `${incoming.dx}px ${incoming.dy}px`);
+    root.style.setProperty('--liquid-new-size', `${incoming.sx} ${incoming.sy}`);
+    root.style.setProperty('--liquid-orb-old-offset', `${-outgoing.dx}px ${-outgoing.dy}px`);
+    root.style.setProperty('--liquid-orb-old-size', `${1 / outgoing.sx} ${1 / outgoing.sy}`);
+    root.style.setProperty('--liquid-orb-new-offset', `${-incoming.dx}px ${-incoming.dy}px`);
+    root.style.setProperty('--liquid-orb-new-size', `${1 / incoming.sx} ${1 / incoming.sy}`);
+  });
+  motion.transition.finished.then(() => {
+    if (navMotion !== motion) return;
+    cancelNavMotion();
+    onComplete?.();
+  }).catch(() => { if (navMotion === motion) cancelNavMotion(); });
+  return true;
+}
 function navigate() {
   const id = location.hash.slice(1);
   if (id === 'main' && $('main').childElementCount) return;
+  const next = META[id] ? id : 'glide';
+  cancelNavMotion();
+  if (next === state.section && $('main').childElementCount) return;
+  const previous = state.section;
+  const main = $('main');
+  const animate = main.childElementCount && !reducedMotion() && typeof main.animate === 'function';
+  const oldRect = animate ? main.getBoundingClientRect() : null;
+  const oldAnchor = animate ? navAnchor(previous) : null;
   captureDraft();
-  state.section = META[id] ? id : 'glide';
-  renderNav(); renderMain();
+  if (window.scrollY) window.scrollTo(0, 0);
+  const update = () => { state.section = next; renderNav(); renderMain(); };
+  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => navAnchor(next), main, 760, () => {
+    if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
+  })) return;
+  const ghost = animate ? main.cloneNode(true) : null;
+  update();
+  if (animate && animateNavigation(ghost, oldRect, oldAnchor, navAnchor(next), main, 760, () => {
+    if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
+  })) return;
   if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
 }
-function openSettings() {
+let settingsTrigger = null;
+let settingsMotion = null;
+let settingsSourceRect = null;
+let settingsDialogRect = null;
+function settingsOrigin(dialog) {
+  const source = settingsTrigger?.isConnected ? settingsTrigger : document.querySelector('.unit-pill');
+  const sourceRect = settingsTrigger?.isConnected ? source.getBoundingClientRect() : settingsSourceRect;
+  const dialogRect = settingsDialogRect || dialog.getBoundingClientRect();
+  const dx = sourceRect.left + sourceRect.width / 2 - dialogRect.left - dialogRect.width / 2;
+  const dy = sourceRect.top + sourceRect.height / 2 - dialogRect.top - dialogRect.height / 2;
+  return `translate(${dx}px, ${dy}px) scale(${sourceRect.width / dialogRect.width}, ${sourceRect.height / dialogRect.height})`;
+}
+function clearSettingsMotion() {
+  if (!settingsMotion) return;
+  settingsMotion.animations.forEach(animation => animation.cancel());
+  settingsMotion = null;
+}
+function closeSettings() {
+  const dialog = $('settingsDialog');
+  if (!dialog.open || settingsMotion?.phase === 'closing') return;
+  if (reducedMotion() || typeof dialog.animate !== 'function') {
+    clearSettingsMotion(); dialog.close(); dialog.classList.remove('settings-closing'); dialog.inert = false; focusSettingsTrigger();
+    return;
+  }
+  const current = getComputedStyle(dialog);
+  const transform = current.transform === 'none' ? 'translate(0px, 0px) scale(1, 1)' : current.transform;
+  const opacity = current.opacity;
+  const radius = current.borderRadius;
+  const form = dialog.querySelector('form');
+  const formOpacity = getComputedStyle(form).opacity;
+  clearSettingsMotion();
+  dialog.classList.add('settings-closing');
+  dialog.inert = true;
+  const animations = [
+    dialog.animate([
+      { transform, opacity, borderRadius: radius },
+      { transform: settingsOrigin(dialog), opacity: 0, borderRadius: '999px' }
+    ], { duration: 370, easing: 'cubic-bezier(.5, 0, .65, 1)', fill: 'forwards' }),
+    form.animate([{ opacity: formOpacity }, { opacity: 0 }], { duration: 180, fill: 'forwards' })
+  ];
+  const motion = { phase: 'closing', animations };
+  settingsMotion = motion;
+  Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
+    if (settingsMotion !== motion) return;
+    dialog.close();
+    clearSettingsMotion();
+    dialog.classList.remove('settings-closing');
+    dialog.inert = false;
+    dialog.style.removeProperty('will-change');
+    focusSettingsTrigger();
+  });
+}
+function focusSettingsTrigger() {
+  const fallback = settingsTrigger?.matches('.sidebar-settings') ? '.sidebar-settings' : '.unit-pill';
+  (settingsTrigger?.isConnected ? settingsTrigger : document.querySelector(fallback))?.focus({ preventScroll: true });
+}
+function openSettings(event) {
+  const dialog = $('settingsDialog');
+  if (dialog.open) return;
+  settingsTrigger = event?.currentTarget || document.querySelector('.unit-pill');
   state.settings = JSON.parse(JSON.stringify(UnitSystem.current));
-  renderSettings(); $('settingsDialog').showModal();
+  renderSettings(); dialog.showModal();
+  settingsSourceRect = settingsTrigger.getBoundingClientRect();
+  settingsDialogRect = dialog.getBoundingClientRect();
+  if (reducedMotion() || typeof dialog.animate !== 'function') return;
+  dialog.style.willChange = 'transform, opacity, border-radius';
+  const animations = [
+    dialog.animate([
+      { transform: settingsOrigin(dialog), opacity: .3, borderRadius: '999px' },
+      { transform: 'translate(0px, 0px) scale(1, 1)', opacity: 1, borderRadius: '22px' }
+    ], { duration: 650, easing: 'cubic-bezier(.18, .55, .3, 1)', fill: 'both' }),
+    dialog.querySelector('form').animate([
+      { opacity: 0, offset: 0 }, { opacity: 0, offset: .52 }, { opacity: 1, offset: .83 }, { opacity: 1, offset: 1 }
+    ], { duration: 650, fill: 'both' })
+  ];
+  const motion = { phase: 'opening', animations };
+  settingsMotion = motion;
+  Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
+    if (settingsMotion !== motion) return;
+    clearSettingsMotion();
+    dialog.style.removeProperty('will-change');
+  });
 }
 function renderSettings() {
   $('settingsPresets').innerHTML = UnitSystem.getPresets().map(preset => `<button type="button" class="preset-button" aria-pressed="${state.settings.id === preset.id}" data-preset="${preset.id}">${preset.name}</button>`).join('');
@@ -432,6 +674,7 @@ function renderSettings() {
 }
 function applySettings(event) {
   event.preventDefault();
+  cancelNavMotion();
   captureDraft();
   const previous = UnitSystem.current;
   // Convert retained input values to the new units so their physical meaning stays the same.
@@ -447,7 +690,7 @@ function applySettings(event) {
   let saved = true;
   try { UnitSystem.save(); } catch { saved = false; }
   state.results = {};
-  $('settingsDialog').close(); renderNav(); renderMain();
+  closeSettings(); renderNav(); renderMain();
   toast(saved ? '单位设置已更新' : '设置已应用，本机存储暂不可用');
 }
 function applyTheme(theme) {
@@ -475,7 +718,12 @@ function init() {
     try { localStorage.setItem('_themeMode', next); } catch { /* Theme works without persistence. */ }
   });
   document.querySelectorAll('[data-action="settings"]').forEach(button => button.addEventListener('click', openSettings));
-  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
+  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => {
+    if (button.dataset.close === 'settingsDialog') closeSettings();
+    else $(button.dataset.close).close();
+  }));
+  $('settingsDialog').addEventListener('cancel', event => { event.preventDefault(); closeSettings(); });
+  $('settingsDialog').addEventListener('click', event => { if (event.target === $('settingsDialog')) closeSettings(); });
   $('settingsForm').addEventListener('submit', applySettings);
   $('pdfFile').addEventListener('change', event => {
     const file = event.target.files[0];

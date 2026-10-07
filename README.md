@@ -1,9 +1,17 @@
-# Flight Calculator | 飞行计算器 V3.1
+# Flight Calculator | 飞行计算器 V3.1.1
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.1-blue.svg)
 
 **专业级飞行计算器** | 适用于 MSFS / X-Plane
+
+---
+
+## V3.1.1 做了什么？
+
+- **重新设计侧栏换页动画** - 玻璃球先移动、再展开；离开的页面先收拢、再飞回原侧栏图标。两段运动连续衔接，去掉造成视觉停顿的中途停靠和反向弹动。
+- **设置面板过渡更连贯** - 保留从单位按钮展开和收回的玻璃形态，去掉明显的往返弹跳。
+- **保持轻量** - 继续使用 WebView2 的合成动画和现有 CSS，无新增运行时依赖；示意图数字格式化器复用，减少首次换页的主线程开销。
 
 ---
 

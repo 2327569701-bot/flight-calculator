@@ -1,6 +1,6 @@
 [package]
 name = "flight-calculator"
-version = "3.1.0"
+version = "3.1.1"
 description = "Flight Calculator - A simple flight calculation tool"
 authors = ["残月"]
 license = "MIT"

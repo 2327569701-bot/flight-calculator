@@ -1,10 +1,11 @@
 {
   "name": "flight-calculator",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "傻瓜式飞行计算器 - 下滑角、垂直速度、TOD、三角、大气与空速、进近速度，含历史记录与导出",
   "scripts": {
     "build:web": "node scripts/build-web.cjs",
     "test:animation": "node scripts/test-diagram-animation.cjs",
+    "test:ui": "node scripts/test-ui-transitions.cjs",
     "test:diagrams": "node --test scripts/test-diagrams.cjs",
     "start": "node scripts/launch-desktop.cjs",
     "tauri": "tauri",
