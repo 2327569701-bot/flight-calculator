@@ -22,24 +22,34 @@ const ICONS = {
   reset: '<path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/>',
   upload: '<path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/>',
   lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-  wind: '<path d="M3 8h12a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h5a3 3 0 1 1-3 3"/>'
+  wind: '<path d="M3 8h12a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h5a3 3 0 1 1-3 3"/>',
+  history: '<path d="M3.5 12a8.5 8.5 0 1 0 2.8-6.3"/><path d="M3.5 4.5V8H7"/><path d="M12 8v4l3 2"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  download: '<path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 21h16"/>',
+  trash: '<path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+  print: '<path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8" rx="1"/><path d="M6 16H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/>'
 };
 const META = {
   glide: { title: '下滑角计算', short: '下滑角', en: 'DESCENT & APPROACH', tag: 'GLIDE', desc: '把握每一段下降，让进近更从容。', modes: ['计算下滑角', '反算水平距离'], labels: ['所需下滑角', '所需水平距离'], note: '输入高度差与水平距离，估算下滑角；也可以通过目标下滑角反算距离。' },
   vs: { title: '垂直速度', short: '垂直速度', en: 'VERTICAL SPEED', tag: 'V/S', desc: '结合地速与下滑角，规划平稳的下降率。', modes: ['计算垂直速度'], labels: ['目标垂直速度'], note: '使用地速与目标下滑角进行计算。图中的飞行剖面仅用于说明参数关系。' },
   tod: { title: '下降顶点', short: '下降顶点', en: 'TOP OF DESCENT', tag: 'TOD', desc: '提前规划下降距离，把握开始下降的时机。', modes: ['计算 TOD 距离', '计算下降时机'], labels: ['开始下降的距离', '距开始下降的时间'], note: '先根据高度差估算下降距离，再结合地速计算抵达下降顶点所需的时间。' },
   tri: { title: '速度 · 距离 · 时间', short: '三角计算', en: 'SPEED, DISTANCE & TIME', tag: 'SDT', desc: '已知任意两项，轻松求出第三项。', modes: ['三角计算'], labels: ['计算结果'], note: '输入速度、距离、时间中的任意两项，并将需要计算的一项留空。时间以分钟为单位。' },
-  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: '当前计算模型为 B737-800。输入参数后，可结合下方原有手册摘录查看计算说明。' },
-  manual: { title: '飞行手册', short: '飞行手册', en: 'FLIGHT LIBRARY', tag: 'FCOM', desc: '常用参考随手可查，专注每一个飞行阶段。' }
+  atmo: { title: '大气 · 空速', short: '大气·空速', en: 'ATMOSPHERE & AIRSPEED', tag: 'ATMO', desc: '压力高度、密度高度与真实空速，把天气与高度换算清楚。', modes: ['压力高度', '密度高度', '真实空速'], labels: ['压力高度', '密度高度', '真实空速'], note: '压力高度由 QNH 与机场标高求得；密度高度按 ISA 偏差估算（约每 °C 119 ft）；真实空速采用每千英尺约 2% 的经验修正、忽略压缩性，仅供模拟飞行参考。' },
+  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: '当前计算模型为 B737-800。输入参数后，可结合下方已有手册摘录查看计算说明。' },
+  manual: { title: '飞行手册', short: '飞行手册', en: 'FLIGHT LIBRARY', tag: 'FCOM', desc: '常用参考随手可查，专注每一个飞行阶段。' },
+  history: { title: '历史记录', short: '历史记录', en: 'CALCULATION HISTORY', tag: 'HIST', desc: '本次飞行算过的内容都在这里，可复制、导出或打印。' }
 };
 const INPUT_HINTS = {
   alt1: ['例如 3000', '当前位置与目标位置的高度差'], dist1: ['例如 10', '沿地面的水平距离'], alt2: ['例如 3000', '当前位置与目标位置的高度差'],
   angle1: ['例如 3', '输入计划采用的下滑角'], gs1: ['例如 140', '飞机相对地面的速度'], angle2: ['例如 3', '输入计划采用的下滑角'],
   alt3: ['例如 30000', '巡航高度与目标高度之差'], angle3: ['例如 3', '可根据计划调整下降角'], dist2: ['例如 90', '距离下降顶点的剩余航程'],
   gs2: ['例如 450', '用于估算飞行时间的地速'], spd: ['输入速度', ''], dst: ['输入距离', ''], tme: ['输入分钟数', '将需要计算的一项留空'],
+  qnh: ['例如 1013', '修正海平面气压（altimeter setting）'], qnhu: ['', '在 hPa 与美制 inHg 之间切换'], felev: ['例如 1500', '机场场面的海拔高度'],
+  palta: ['例如 5000', '由 QNH 与标高算出的压力高度'], oat: ['例如 25', '机场或当前高度的外界气温'],
+  ias: ['例如 140', '空速表指示速度（校准空速）'], paltas: ['例如 30000', '计划飞行高度对应的压力高度'],
   vref: ['例如 135', ''], wind: ['例如 10', ''], gust: ['例如 0', ''], winds: ['例如 15', ''], wangle: ['例如 30', '相对跑道方向的夹角'], wght: ['输入飞机重量', '']
 };
-const fixedUnits = { angle1: '°', angle2: '°', angle3: '°', wangle: '°', tme: 'min', vref: 'kts', wind: 'kts', gust: 'kts', winds: 'kts' };
+const fixedUnits = { angle1: '°', angle2: '°', angle3: '°', wangle: '°', tme: 'min', oat: '°C', vref: 'kts', wind: 'kts', gust: 'kts', winds: 'kts' };
 const state = { section: 'glide', modes: {}, drafts: {}, results: {}, settings: null, pdfUrl: null, pdfName: '' };
 const $ = id => document.getElementById(id);
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -54,8 +64,170 @@ function toast(message) {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => $('toast').classList.remove('visible'), 2600);
 }
+// ---------- V3 calculation history & export ----------
+const HISTORY_KEY = '_flight_calc_history';
+const HISTORY_MAX = 50;
+function loadHistory() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(HISTORY_KEY));
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function persistHistory(arr) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) { /* storage unavailable */ }
+}
+function formatInputs(card, data) {
+  return card.inputs.map(input => {
+    const label = input.label.replace(/\s*\((kts|min|°C)\)/g, '');
+    if (input.type === 'select') {
+      const idx = input.vals.indexOf(data[input.id]);
+      const shown = idx >= 0 ? input.opts[idx] : data[input.id];
+      return shown ? `${label} ${shown}` : null;
+    }
+    const v = data[input.id];
+    if (v === null || v === undefined || v === '') return null;
+    let u = fixedUnits[input.id] || input.unit || UnitSystem.getLabel(input.type);
+    // A select marked controlsUnit determines the displayed unit of this number field.
+    const controller = card.inputs.find(item => item.type === 'select' && item.controlsUnit === input.id);
+    if (controller) {
+      const ci = controller.vals.indexOf(data[controller.id]);
+      if (ci >= 0) u = controller.opts[ci];
+    }
+    return `${label} ${v}${u ? ' ' + u : ''}`;
+  }).filter(Boolean).join(' · ');
+}
+function recordHistory(card, data, result) {
+  const section = currentSection();
+  const mode = state.modes[section.id] || 0;
+  const inputsText = formatInputs(card, data);
+  const resultText = result.val + (result.unit ? ' ' + result.unit : '');
+  const signature = card.id + '|' + JSON.stringify(data) + '|' + result.val;
+  const arr = loadHistory();
+  if (arr.length && arr[0].signature === signature) arr[0].t = Date.now();
+  else arr.unshift({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    t: Date.now(),
+    section: section.id,
+    card: card.id,
+    title: META[section.id].short,
+    mode: META[section.id].modes[mode],
+    inputs: inputsText,
+    result: resultText,
+    signature
+  });
+  persistHistory(arr.slice(0, HISTORY_MAX));
+}
+function entryPlainText(e) {
+  return `【${e.title} · ${e.mode}】${new Date(e.t).toLocaleString()}\n输入：${e.inputs || '—'}\n结果：${e.result}`;
+}
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); return true; }
+  } catch (e) { /* fall through to legacy path */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+function downloadFile(name, mime, content) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function historyJSON(arr) {
+  return JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    count: arr.length,
+    entries: arr.map(e => ({ time: new Date(e.t).toISOString(), calculator: e.title, mode: e.mode, inputs: e.inputs, result: e.result }))
+  }, null, 2);
+}
+function csvCell(v) {
+  v = String(v == null ? '' : v);
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function historyCSV(arr) {
+  const head = ['时间', '计算器', '模式', '输入', '结果'];
+  const rows = arr.map(e => [new Date(e.t).toLocaleString(), e.title, e.mode, e.inputs, e.result].map(csvCell).join(','));
+  return '﻿' + head.join(',') + '\n' + rows.join('\r\n');
+}
+function historyReportHTML(arr) {
+  const items = arr.map(e => `<div class="print-entry"><div><strong>${escapeHtml(e.title)} · ${escapeHtml(e.mode)}</strong><span>${new Date(e.t).toLocaleString()}</span></div><div class="print-inputs">${escapeHtml(e.inputs || '—')}</div><div class="print-result">${escapeHtml(e.result)}</div></div>`).join('');
+  return `<h2>Flight Calculator · 计算记录</h2><p>导出时间：${new Date().toLocaleString()} · 共 ${arr.length} 条</p>${items}`;
+}
+function printHistory() {
+  const arr = loadHistory();
+  if (!arr.length) { toast('没有可打印的记录'); return; }
+  const report = $('printReport');
+  report.innerHTML = historyReportHTML(arr);
+  document.body.dataset.printing = '1';
+  const cleanup = () => { document.body.dataset.printing = ''; report.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  window.print();
+  setTimeout(cleanup, 1500); // fallback if afterprint does not fire
+}
+function renderHistoryPage() {
+  const meta = META.history;
+  const arr = loadHistory();
+  let html = `<div class="page-heading"><div><span class="eyebrow">${meta.en}</span><h1>${meta.title}</h1><p class="page-description">${meta.desc}</p></div><div class="section-symbol">${icon('history')}</div></div>`;
+  html += `<div class="history-toolbar panel">
+      <button class="button button-secondary" id="histCopyAll">${icon('copy')}全部复制</button>
+      <button class="button button-secondary" id="histExportJSON">${icon('download')}导出 JSON</button>
+      <button class="button button-secondary" id="histExportCSV">${icon('download')}导出 CSV</button>
+      <button class="button button-secondary" id="histPrint">${icon('print')}打印</button>
+      <button class="button button-secondary danger" id="histClear">${icon('trash')}清空</button>
+    </div>`;
+  if (!arr.length) {
+    html += `<section class="panel history-empty">${icon('history')}<h2>还没有计算记录</h2><p>完成任意一次计算后，结果会自动保存在这里，方便你回顾、复制或导出。</p></section>`;
+  } else {
+    html += `<div class="history-list">` + arr.map(e => `<section class="panel history-entry" data-id="${e.id}">
+        <div class="history-main">
+          <div class="history-head"><strong>${escapeHtml(e.title)}</strong><span class="history-mode">${escapeHtml(e.mode)}</span><span class="history-time">${escapeHtml(new Date(e.t).toLocaleString())}</span></div>
+          <div class="history-inputs">${escapeHtml(e.inputs || '—')}</div>
+        </div>
+        <div class="history-result">${escapeHtml(e.result)}</div>
+        <div class="history-actions">
+          <button class="icon-button" data-hist="copy" title="复制这条" aria-label="复制这条"><span data-icon="copy"></span></button>
+          <button class="icon-button" data-hist="delete" title="删除这条" aria-label="删除这条"><span data-icon="trash"></span></button>
+        </div>
+      </section>`).join('') + `</div>`;
+  }
+  $('main').innerHTML = html;
+  hydrateIcons($('main'));
+  const refresh = () => renderHistoryPage();
+  $('histCopyAll')?.addEventListener('click', async () => {
+    const text = loadHistory().map(entryPlainText).join('\n\n----------\n\n');
+    toast((await copyText(text)) ? '已复制全部记录' : '复制失败，请手动选择文本');
+  });
+  $('histExportJSON')?.addEventListener('click', () => { downloadFile('flight-calculator-history.json', 'application/json', historyJSON(loadHistory())); toast('已导出 JSON'); });
+  $('histExportCSV')?.addEventListener('click', () => { downloadFile('flight-calculator-history.csv', 'text/csv;charset=utf-8', historyCSV(loadHistory())); toast('已导出 CSV'); });
+  $('histPrint')?.addEventListener('click', printHistory);
+  $('histClear')?.addEventListener('click', () => {
+    if (!loadHistory().length) return;
+    persistHistory([]); refresh(); toast('历史已清空');
+  });
+  document.querySelectorAll('.history-entry').forEach(row => {
+    const id = row.dataset.id;
+    row.querySelector('[data-hist="copy"]').addEventListener('click', async () => {
+      const e = loadHistory().find(x => x.id === id);
+      toast(e && (await copyText(entryPlainText(e))) ? '已复制该条记录' : '复制失败');
+    });
+    row.querySelector('[data-hist="delete"]').addEventListener('click', () => {
+      persistHistory(loadHistory().filter(x => x.id !== id)); refresh(); toast('已删除该条记录');
+    });
+  });
+}
+
 function renderNav() {
-  $('nav').innerHTML = CALCULATOR_SECTIONS.map((section, i) => `${i === 4 ? '<div class="nav-divider"></div>' : ''}<a class="nav-item${state.section === section.id ? ' active' : ''}" href="#${section.id}" ${state.section === section.id ? 'aria-current="page"' : ''} title="${META[section.id].short}">${icon(section.id)}<span class="nav-label">${META[section.id].short}</span><span class="nav-en">${META[section.id].tag}</span></a>`).join('');
+  const items = CALCULATOR_SECTIONS.map((section, i) => `${i === 5 ? '<div class="nav-divider"></div>' : ''}<a class="nav-item${state.section === section.id ? ' active' : ''}" href="#${section.id}" ${state.section === section.id ? 'aria-current="page"' : ''} title="${META[section.id].short}">${icon(section.id)}<span class="nav-label">${META[section.id].short}</span><span class="nav-en">${META[section.id].tag}</span></a>`).join('');
+  const historyItem = `<div class="nav-divider"></div><a class="nav-item${state.section === 'history' ? ' active' : ''}" href="#history" ${state.section === 'history' ? 'aria-current="page"' : ''} title="历史记录">${icon('history')}<span class="nav-label">历史记录</span><span class="nav-en">HIST</span></a>`;
+  $('nav').innerHTML = items + historyItem;
   $('breadcrumbCurrent').textContent = META[state.section].short;
   $('unitSummary').textContent = unitName();
 }
@@ -64,7 +236,7 @@ function fieldMarkup(input, card) {
   const saved = state.drafts[card.id]?.[input.id] ?? input.def ?? '';
   const label = input.label.replace(/\s*\((kts|min)\)/g, '');
   const hint = INPUT_HINTS[input.id] || ['', ''];
-  const unit = fixedUnits[input.id] || (input.type !== 'select' ? UnitSystem.getLabel(input.type) : '');
+  const unit = fixedUnits[input.id] || input.unit || (input.type !== 'select' ? UnitSystem.getLabel(input.type) : '');
   const labelId = `${id}-label`;
   const help = hint[1] ? `<p class="input-help" id="${id}-help">${hint[1]}</p>` : '';
   let control;
@@ -79,6 +251,7 @@ function referenceMarkup(open = false) {
   return `<details class="manual-reference"${open ? ' open' : ''}><summary>手册参考 · B737-800 进近速度</summary><div class="manual-content">${MANUAL_CONTENT}</div></details>`;
 }
 function renderMain() {
+  if (state.section === 'history') { renderHistoryPage(); return; }
   const meta = META[state.section];
   const section = currentSection();
   const card = currentCard();
@@ -118,6 +291,17 @@ function renderMain() {
     });
     renderResult(true);
     $('calculatorForm').querySelector('input, select')?.focus();
+  });
+  // A select can drive the unit suffix shown on a related numeric input.
+  card.inputs.forEach(input => {
+    if (input.type !== 'select' || !input.controlsUnit) return;
+    const select = $(`${card.id}-${input.id}`);
+    const targetInput = card.inputs.find(item => item.id === input.controlsUnit);
+    const unitSpan = targetInput && $(`${card.id}-${targetInput.id}-unit`);
+    if (!unitSpan) return;
+    const sync = () => { unitSpan.textContent = select.options[select.selectedIndex].textContent; };
+    sync();
+    select.addEventListener('change', sync);
   });
 }
 function captureDraft() {
@@ -169,6 +353,7 @@ function calculate() {
     result = card.fn(data) || { ok: false, msg: '请检查输入参数。' };
   }
   state.results[card.id] = { ...result, inputs: { ...data } };
+  if (result.ok) recordHistory(card, data, result);
   renderResult(true);
   if (window.matchMedia('(max-width: 650px)').matches) $('flightDiagram').scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }

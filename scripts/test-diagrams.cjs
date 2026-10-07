@@ -24,7 +24,10 @@ const cases = {
   r1: { spd: 120, dst: 60, tme: null },
   vapp1: { vref: 135, wind: 10, wdir: 'headwind', gust: 0 },
   vapp2: { winds: 20, wangle: 30 },
-  vapp3: { wght: 60000, flap: '30' }
+  vapp3: { wght: 60000, flap: '30' },
+  a1: { qnh: 1013, qnhu: 'hpa', felev: 1500 },
+  a2: { palta: 5000, oat: 25 },
+  a3: { ias: 140, paltas: 10000 }
 };
 for (const [id, input] of Object.entries(cases)) {
   test(`${id}: completed results have labeled, finite SVG geometry; edited/error states have no stale data`, () => {
@@ -113,4 +116,52 @@ test('out-of-range geometry and extreme numeric values do not produce invalid SV
   assert.doesNotMatch(diagrams.svg(tiny), /NaN|Infinity/);
   const invalid = diagrams.model('g1', { ok: true, val: 'NaN', inputs: { alt1: NaN, dist1: 10 } }, units);
   assert.equal(invalid.ready, false);
+});
+
+// ---- V3 atmosphere & airspeed ----
+test('pressure altitude: standard day equals field elevation; low QNH raises it; inHg path matches', () => {
+  const std = diagrams.model('a1', { ok: true, val: '1500', unit: 'ft', inputs: { qnh: 1013.25, qnhu: 'hpa', felev: 1500 } }, units);
+  assert.equal(std.result, 1500);
+  const low = build('a1', { qnh: 998, qnhu: 'hpa', felev: 1500 });
+  assert.equal(low.result, 1950);
+  const inhg = build('a1', { qnh: 29.92, qnhu: 'inhg', felev: 0 });
+  assert.equal(inhg.result, 0);
+  const inhgLow = build('a1', { qnh: 29.5, qnhu: 'inhg', felev: 1000 });
+  assert.equal(inhgLow.result, 1420);
+});
+test('density altitude: known hot value and ISA deviation; cold day sits below pressure altitude', () => {
+  const hot = build('a2', { palta: 5000, oat: 25 });
+  assert.equal(hot.result, 7376);
+  assert.equal(hot.hot, true);
+  assert.match(hot.metrics[1].value, /\+20\.0/);
+  // At 5000 ft ISA is 5 C; on a cold day DA drops below PA.
+  const cold = build('a2', { palta: 5000, oat: -10 });
+  assert.ok(cold.result < 5000);
+  assert.equal(cold.hot, false);
+});
+test('true airspeed: 2% per 1000 ft rule and gauge reference point', () => {
+  const tas = build('a3', { ias: 140, paltas: 10000 });
+  assert.equal(tas.speed, 168);
+  assert.equal(tas.reference, 140);
+  assert.equal(tas.gaugeLabel, 'TAS');
+  const seaLevel = build('a3', { ias: 100, paltas: 0 });
+  assert.equal(seaLevel.speed, 100);
+});
+test('atmosphere cards reject missing inputs without producing invalid SVG', () => {
+  for (const [id, input] of [['a1', { qnh: null, qnhu: 'hpa', felev: null }], ['a2', { palta: null, oat: null }], ['a3', { ias: null, paltas: null }]]) {
+    const card = sections.flatMap(s => s.cards).find(c => c.id === id);
+    const result = card.fn(input);
+    assert.equal(result.ok, false);
+    const m = diagrams.model(id, { ...result, inputs: input }, units);
+    assert.equal(m.ready, false);
+    assert.doesNotMatch(diagrams.svg(m), /NaN|Infinity|undefined/);
+  }
+});
+test('altitude results stay consistent when expressed in metric units', () => {
+  units.setPreset('metric');
+  // 1500 ft field elevation ~ 457 m; standard QNH keeps PA at the same altitude.
+  const metricPA = build('a1', { qnh: 1013.25, qnhu: 'hpa', felev: 457.2 });
+  assert.ok(Math.abs(metricPA.result - 457) <= 2);
+  assert.equal(metricPA.metrics[0].value.includes('m'), true);
+  units.setPreset('mixed');
 });

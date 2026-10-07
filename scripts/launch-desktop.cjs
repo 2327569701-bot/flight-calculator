@@ -3,6 +3,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
 const executable = [
+  path.join(root, 'Flight Calculator V3.exe'),
   path.join(root, 'Flight Calculator V2.exe'),
   path.join(root, 'src-tauri', 'target', 'release', 'flight-calculator.exe')
 ].find(file => fs.existsSync(file));

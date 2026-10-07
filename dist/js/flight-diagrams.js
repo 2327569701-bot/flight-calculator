@@ -11,8 +11,8 @@
   };
   const amount = (value, unit = '', digits = 1) => `${format(value, digits)}${unit ? ' ' + unit : ''}`;
   const metric = (label, value, unit = '', computed = false) => ({ label, value: typeof value === 'number' ? amount(value, unit) : value, computed });
-  const titles = { g1: '下滑剖面', g2: '下滑剖面', v1: '下降矢量', t1: '下降规划', t2: '距 TOD 时间轴', r1: '航程关系', vapp1: '进近速度仪表', vapp2: '风分量矢量', vapp3: 'VREF 参考仪表' };
-  const types = { g1: 'descent', g2: 'descent', v1: 'vertical', t1: 'descent', t2: 'timeline', r1: 'journey', vapp1: 'gauge', vapp2: 'wind', vapp3: 'gauge' };
+  const titles = { g1: '下滑剖面', g2: '下滑剖面', v1: '下降矢量', t1: '下降规划', t2: '距 TOD 时间轴', r1: '航程关系', vapp1: '进近速度仪表', vapp2: '风分量矢量', vapp3: 'VREF 参考仪表', a1: '压力高度标尺', a2: '密度高度标尺', a3: '真实空速仪表' };
+  const types = { g1: 'descent', g2: 'descent', v1: 'vertical', t1: 'descent', t2: 'timeline', r1: 'journey', vapp1: 'gauge', vapp2: 'wind', vapp3: 'gauge', a1: 'altscale', a2: 'altscale', a3: 'gauge' };
 
   function model(cardId, result, units) {
     const m = { cardId, kind: types[cardId], title: titles[cardId], ready: false, status: result ? '请检查输入' : '等待计算', metrics: [], caption: '计算后，图形与标注将随结果更新。' };
@@ -65,6 +65,34 @@
       m.metrics = [metric('来风角', m.angle, '°'), metric(m.longitudinal, m.headwind, 'kts', true), metric('侧风', m.crosswind, 'kts', true)];
       m.caption = '机头朝上；蓝色矢量指向来风方向，虚线为分量投影。';
       if (!(m.windSpeed > 0) || ![m.angle, m.headwind, m.crosswind].every(Number.isFinite)) m.ready = false;
+    } else if (cardId === 'a1' || cardId === 'a2') {
+      if (cardId === 'a1') {
+        m.base = d.felev; m.result = n;
+        m.baseLabel = '机场标高'; m.resultLabel = '压力高度';
+        const pressureUnit = d.qnhu === 'inhg' ? 'inHg' : 'hPa';
+        m.noteText = `QNH ${format(d.qnh)} ${pressureUnit}`;
+        m.metrics = [metric('机场标高', d.felev, altitude), metric('QNH', `${format(d.qnh)} ${pressureUnit}`), metric('压力高度', n, altitude, true)];
+        m.caption = '压力高度是把气压调到标准面 1013.25 hPa（29.92 inHg）后的高度；低气压日会高于机场标高。';
+        if (![d.felev, n, d.qnh].every(Number.isFinite) || d.qnh <= 0) m.ready = false;
+      } else {
+        m.base = d.palta; m.result = n;
+        m.baseLabel = '压力高度'; m.resultLabel = '密度高度';
+        const paFt = units.toStd('altitude', d.palta);
+        const isa = 15 - 2 * paFt / 1000;
+        const dev = d.oat - isa;
+        m.hot = dev > 0;
+        const devText = (dev >= 0 ? '+' : '') + dev.toFixed(1);
+        m.noteText = `OAT ${format(d.oat)}°C · ISA偏差 ${devText}°C`;
+        m.metrics = [metric('压力高度', d.palta, altitude), metric('OAT / ISA偏差', `${format(d.oat)}°C / ${devText}°C`), metric('密度高度', n, altitude, true)];
+        m.caption = '密度高度反映空气密度；高温或高海拔会使它高于压力高度，飞机性能随之下降。';
+        if (![d.palta, n, d.oat].every(Number.isFinite)) m.ready = false;
+      }
+      m.unit = altitude;
+    } else if (cardId === 'a3') {
+      m.speed = n; m.reference = d.ias; m.speedUnit = speed; m.referenceLabel = 'IAS'; m.gaugeLabel = 'TAS';
+      m.metrics = [metric('指示空速', d.ias, speed), metric('压力高度', d.paltas, altitude), metric('真实空速', n, speed, true)];
+      m.caption = '每升高 1000 ft 约增加 2%；为经验估算，忽略高速压缩性。';
+      if (!Number.isFinite(m.speed) || m.speed < 0 || !(d.ias > 0)) m.ready = false;
     } else {
       m.speed = n; m.reference = cardId === 'vapp1' ? d.vref : null;
       m.gaugeLabel = cardId === 'vapp1' ? 'VAPP' : 'VREF';
@@ -211,10 +239,10 @@
     }
     const hasReference = m.ready && Number.isFinite(m.reference);
     const referenceAngle = hasReference ? clamp(m.reference / max, 0, 1) * 180 : 0;
-    svg += `<circle cx="126" cy="161" r="5" transform="rotate(${referenceAngle} 220 161)" opacity="${hasReference ? 1 : 0}" class="diagram-reference-dot"><title>${hasReference ? 'VREF ' + escape(amount(m.reference, 'kts')) : ''}</title></circle>`;
+    svg += `<circle cx="126" cy="161" r="5" transform="rotate(${referenceAngle} 220 161)" opacity="${hasReference ? 1 : 0}" class="diagram-reference-dot"><title>${hasReference ? (m.referenceLabel || 'VREF') + ' ' + escape(amount(m.reference, m.speedUnit || 'kts')) : ''}</title></circle>`;
     svg += line(220, 161, 152, 161, 'diagram-needle', `data-geometry="needle" transform="rotate(${fraction * 180} 220 161)"`) + dot(220, 161);
-    svg += text(220, 199, (m.gaugeLabel || (m.cardId === 'vapp1' ? 'VAPP' : 'VREF')) + ' · ' + (m.ready ? amount(m.speed, 'kts') : '—'), 'diagram-gauge-value', 'middle');
-    svg += text(220, 227, m.cardId === 'vapp1' ? '○ VREF 参考点   /   指针：VAPP' : '指针：当前重量与襟翼对应的 VREF', 'diagram-small', 'middle');
+    svg += text(220, 199, (m.gaugeLabel || (m.cardId === 'vapp1' ? 'VAPP' : 'VREF')) + ' · ' + (m.ready ? amount(m.speed, m.speedUnit || 'kts') : '—'), 'diagram-gauge-value', 'middle');
+    svg += text(220, 227, m.cardId === 'vapp1' ? '○ VREF 参考点   /   指针：VAPP' : m.cardId === 'a3' ? '○ IAS 参考点   /   指针：TAS' : '指针：当前重量与襟翼对应的 VREF', 'diagram-small', 'middle');
     return svg;
   }
   function wind(m, motion) {
@@ -240,7 +268,31 @@
     svg += text(27, 220, m.ready ? '外圈 ' + amount(max, 'kts') : '比例尺 —', 'diagram-small');
     return svg;
   }
-  const drawers = { descent, vertical, timeline, journey, gauge, wind };
+  function altscale(m) {
+    const base = m.ready ? m.base : 0, result = m.ready ? m.result : 0;
+    let lo = Math.min(base, result, 0), hi = Math.max(base, result);
+    if (!(hi - lo > 0)) hi = lo + 1;
+    const span = niceMax((hi - lo) * 1.18);
+    const X = 150, topY = 52, botY = 186;
+    const yOf = v => botY - (v - lo) / span * (botY - topY);
+    const yb = yOf(base), yr = yOf(result);
+    let svg = grid();
+    svg += text(40, 34, m.ready ? m.noteText : '—', 'diagram-label');
+    svg += line(X, topY - 8, X, botY + 2, 'diagram-dimension');
+    for (let i = 0; i <= 4; i++) {
+      const val = lo + span * i / 4, y = yOf(val);
+      svg += line(X - 5, y, X + 5, y, 'diagram-dimension') + text(X - 12, y + 3, format(val, 0), 'diagram-small', 'end');
+    }
+    svg += line(X, yb, 296, yb, 'diagram-guide');
+    svg += dot(X, yb) + text(302, yb + 4, m.ready ? m.baseLabel : '—', 'diagram-small');
+    const dotClass = m.hot ? 'diagram-dot-hot' : 'diagram-dot';
+    const lineClass = m.hot ? 'diagram-hot-line' : 'diagram-cruise';
+    svg += line(X, yr, 296, yr, lineClass);
+    svg += `<circle cx="${X}" cy="${yr}" r="5" class="${dotClass}"/>` + text(302, yr + 4, m.ready ? m.resultLabel : '—', 'diagram-label');
+    svg += text(X - 4, botY + 24, '高度 / ' + (m.unit || ''), 'diagram-small', 'end');
+    return svg;
+  }
+  const drawers = { descent, vertical, timeline, journey, gauge, wind, altscale };
   function svg(m, motion = m) {
     const description = `${m.title}，${m.status}。${m.metrics.map(item => item.label + ' ' + item.value).join('，')}。${m.caption}`;
     return `<svg class="profile-svg dynamic-profile${m.ready ? ' is-ready' : ' is-empty'}" style="--diagram-ink: ${m.ready ? 1 : .25}; --diagram-shade: ${m.ready ? 1 : .4}" viewBox="0 0 440 242" role="img" aria-label="${escape(description)}" data-diagram="${m.cardId}"><defs><linearGradient id="diagram-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".16"/><stop offset="1" stop-color="currentColor" stop-opacity=".025"/></linearGradient><marker id="diagram-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--blue)" stroke-width="1.5"/></marker><marker id="diagram-arrow-soft" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="m1 1 6 3-6 3" fill="none" stroke="var(--diagram-teal)" stroke-width="1.5"/></marker></defs>${(drawers[m.kind] || descent)(m, motion)}</svg>`;

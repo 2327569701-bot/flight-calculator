@@ -194,6 +194,8 @@ kbd { font: inherit; border: 1px solid var(--line); border-radius: 3px; padding:
 .diagram-gauge-fill { stroke: var(--blue); stroke-width: 10; stroke-linecap: round; fill: none; opacity: .6; }
 .diagram-tick { stroke: color-mix(in srgb, var(--blue) calc(var(--tick-lit, 0) * 100%), var(--muted)); stroke-width: 1; stroke-opacity: .7; }
 .diagram-reference-dot { fill: var(--surface); stroke: var(--diagram-teal); stroke-width: 2; }
+.diagram-dot-hot { fill: #d15353; stroke: var(--surface); stroke-width: 2; }
+.diagram-hot-line { stroke: #d15353; stroke-width: 1.6; stroke-opacity: .7; }
 .diagram-needle { stroke: var(--blue); stroke-width: 2; stroke-linecap: round; }
 .dynamic-profile .diagram-gauge-value { fill: var(--text); font-size: 19px; font-weight: 550; letter-spacing: -.6px; }
 .diagram-compass { fill: none; stroke: var(--line); stroke-width: 1; }
@@ -262,6 +264,36 @@ dialog::backdrop { background: #1a2b4b3d; backdrop-filter: blur(7px); -webkit-ba
 .pdf-dialog iframe { width: 100%; flex: 1; border: 0; min-height: 0; }
 .toast { position: fixed; left: 50%; bottom: 30px; transform: translate(-50%, 15px); border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); padding: 12px 20px; box-shadow: 0 6px 30px #1c315626; font-size: 12px; z-index: 40; opacity: 0; pointer-events: none; transition: .2s; }
 .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* V3 history */
+.history-toolbar { display: flex; flex-wrap: wrap; gap: 9px; padding: 13px 15px; margin-bottom: 18px; }
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 16px 18px; }
+.history-head { display: flex; flex-wrap: wrap; gap: 9px; align-items: baseline; }
+.history-mode { font-size: 11px; color: #778497; background: #f5f8fd; border: 1px solid #e9edf3; border-radius: 7px; padding: 1px 8px; }
+.history-time { font-size: 10px; color: #9aa5b4; margin-left: auto; }
+.history-inputs { font-size: 11.5px; color: #647185; margin-top: 7px; overflow-wrap: anywhere; }
+.history-result { font-size: 19px; font-weight: 650; color: #1762cf; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.history-actions { display: flex; gap: 2px; }
+.history-empty { padding: 48px 30px; text-align: center; }
+.history-empty svg { width: 40px; height: 40px; color: #b6bfcc; margin: 0 auto 12px; }
+.history-empty h2 { font-size: 16px; margin-bottom: 7px; }
+.history-empty p { font-size: 12px; color: #778497; }
+.button.button-secondary.danger { color: #d15353; }
+#printReport { display: none; }
+.print-entry { border-bottom: 1px solid #999; padding: 10px 0; }
+.print-entry > div:first-child { display: flex; justify-content: space-between; gap: 12px; }
+.print-entry span { color: #444; font-size: 11px; }
+.print-inputs { font-size: 12px; color: #333; margin: 5px 0; }
+.print-result { font-size: 16px; font-weight: 700; }
+@media print {
+  body[data-printing="1"] .app-shell, body[data-printing="1"] dialog, body[data-printing="1"] .toast, body[data-printing="1"] .skip-link { display: none !important; }
+  body[data-printing="1"] #printReport { display: block !important; padding: 24px; color: #000; }
+}
+@media (max-width: 900px) {
+  .history-entry { grid-template-columns: minmax(0, 1fr) auto; }
+  .history-actions { grid-column: 1 / -1; justify-content: flex-end; }
+}
 @media (min-width: 1500px) { .main { padding-top: 58px; } .input-panel { padding: 30px 34px; } .profile-svg { height: 205px; } .result-content { padding: 28px 34px; } }
 @media (max-width: 1100px) { :root { --sidebar-width: 210px; } .sidebar { padding-left: 12px; padding-right: 12px; } .brand-copy strong { font-size: 12px; } .workspace-label span { display: none; } .topbar { padding: 0 28px; } .main { padding: 32px 28px 18px; } .calculator-workspace { gap: 17px; } .input-panel, .result-content { padding: 22px; } .profile-visual { padding: 22px 22px 0; } .mode-hint { display: none; } }
 @media (max-width: 900px) { :root { --sidebar-width: 78px; } .sidebar { align-items: center; padding-top: 24px; } .brand, .workspace-label, .nav-item span, .nav-en, .nav-item.active::after, .sim-badge, .sidebar-settings > span:not(:first-child) { display: none; } .brand { padding: 0; } .nav { margin-top: 8px; width: 100%; } .nav-item { justify-content: center; padding: 13px; } .nav-divider { margin: 12px 5px; } .sidebar-settings { padding: 18px 12px 5px; } .main { padding-top: 29px; } }
