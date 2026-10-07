@@ -12,6 +12,9 @@ const cases = [
   ['tod', 0, { alt3: 30000, angle3: 3 }],
   ['tod', 1, { dist2: 90, gs2: 450 }],
   ['tri', 0, { spd: 120, dst: 60 }],
+  ['atmo', 0, { qnh: 1000, qnhu: 'hpa', felev: 1500 }],
+  ['atmo', 1, { palta: 5000, oat: 25 }],
+  ['atmo', 2, { ias: 140, paltas: 10000 }],
   ['vapp', 0, { vref: 135, wind: 10, wdir: 'headwind', gust: 0 }],
   ['vapp', 1, { winds: 20, wangle: 30 }],
   ['vapp', 2, { wght: 60000, flap: '30' }]
@@ -39,6 +42,10 @@ const server = http.createServer((req, res) => {
     await page.clock.install();
     await page.clock.pauseAt(new Date(Date.now() + 1000));
     await page.evaluate(() => {
+      window.geometrySnapshot = () => {
+        const el = document.querySelector('[data-geometry]');
+        return ['d', 'transform', 'x1', 'y1', 'x2', 'y2'].map(name => el.getAttribute(name) || '').join('|');
+      };
       window.animationSnapshot = (target = false) => {
         let svg = document.querySelector('#flightDiagram svg');
         if (target) {
@@ -61,22 +68,22 @@ const server = http.createServer((req, res) => {
           field.dispatchEvent(new Event('input', { bubbles: true }));
         }
       }, { section, mode, inputs });
-      const initialGeometry = await page.locator('[data-geometry]').evaluate(el => el.outerHTML);
+      const initialGeometry = await page.evaluate(() => geometrySnapshot());
       await page.evaluate(() => document.querySelector('#calculatorForm').requestSubmit());
-      assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), initialGeometry, `${section}/${mode}: calculation must not jump before the first frame`);
+      assert.equal(await page.evaluate(() => geometrySnapshot()), initialGeometry, `${section}/${mode}: calculation must not jump before the first frame`);
       const target = await page.evaluate(() => animationSnapshot(true));
       await page.clock.runFor(300);
       const intermediate = await page.evaluate(() => animationSnapshot());
-      assert.notEqual(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), initialGeometry);
+      assert.notEqual(await page.evaluate(() => geometrySnapshot()), initialGeometry);
       assert.notEqual(intermediate, target, 'must pass through intermediate geometry');
       await page.clock.runFor(2200);
       assert.equal(await page.evaluate(() => animationSnapshot()), target);
-      const calculatedGeometry = await page.locator('[data-geometry]').evaluate(el => el.outerHTML);
+      const calculatedGeometry = await page.evaluate(() => geometrySnapshot());
       await page.evaluate(() => document.querySelector('#resetInputs').click());
-      assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), calculatedGeometry, 'reset must start from the visible position');
+      assert.equal(await page.evaluate(() => geometrySnapshot()), calculatedGeometry, 'reset must start from the visible position');
       const resetTarget = await page.evaluate(() => animationSnapshot(true));
       await page.clock.runFor(250);
-      assert.notEqual(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), calculatedGeometry);
+      assert.notEqual(await page.evaluate(() => geometrySnapshot()), calculatedGeometry);
       assert.notEqual(await page.evaluate(() => animationSnapshot()), resetTarget);
       await page.clock.runFor(2200);
       assert.equal(await page.evaluate(() => animationSnapshot()), resetTarget);
@@ -92,7 +99,7 @@ const server = http.createServer((req, res) => {
     });
     await page.clock.runFor(300);
     for (const action of ['reset', 'calculate', 'edit', 'calculate']) {
-      const before = await page.locator('[data-geometry]').evaluate(el => el.outerHTML);
+      const before = await page.evaluate(() => geometrySnapshot());
       await page.evaluate(action => {
         if (action === 'reset') document.querySelector('#resetInputs').click();
         else {
@@ -103,7 +110,7 @@ const server = http.createServer((req, res) => {
           else document.querySelector('#calculatorForm').requestSubmit();
         }
       }, action);
-      assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), before, `interrupted ${action} must preserve visible geometry`);
+      assert.equal(await page.evaluate(() => geometrySnapshot()), before, `interrupted ${action} must preserve visible geometry`);
       await page.clock.runFor(120);
     }
     await page.clock.runFor(2500);
@@ -113,10 +120,10 @@ const server = http.createServer((req, res) => {
     await page.evaluate(() => {
       state.section = 'tod'; state.modes.tod = 1; renderMain();
       state.results.t2 = { ok: true, val: '12 分钟', inputs: { dist2: 90, gs2: 450 } }; renderResult();
-      window.beforeScale = document.querySelector('[data-geometry]').outerHTML;
+      window.beforeScale = geometrySnapshot();
       state.results.t2 = { ok: true, val: '72 分钟', inputs: { dist2: 540, gs2: 450 } }; renderResult(true);
     });
-    assert.equal(await page.locator('[data-geometry]').evaluate(el => el.outerHTML), await page.evaluate(() => beforeScale));
+    assert.equal(await page.evaluate(() => geometrySnapshot()), await page.evaluate(() => beforeScale));
     await page.clock.runFor(2500);
     assert.equal(await page.evaluate(() => animationSnapshot()), await page.evaluate(() => animationSnapshot(true)));
     const settled = await page.evaluate(() => animationSnapshot());

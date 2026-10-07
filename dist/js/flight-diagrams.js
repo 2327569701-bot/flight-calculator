@@ -287,6 +287,7 @@
     svg += dot(X, yb) + text(302, yb + 4, m.ready ? m.baseLabel : '—', 'diagram-small');
     const dotClass = m.hot ? 'diagram-dot-hot' : 'diagram-dot';
     const lineClass = m.hot ? 'diagram-hot-line' : 'diagram-cruise';
+    svg += `<path class="diagram-route${m.hot ? ' diagram-hot-line' : ''}" data-geometry="altitude" d="M${X} ${yb}L${X} ${yr}" pathLength="1"/>`;
     svg += line(X, yr, 296, yr, lineClass);
     svg += `<circle cx="${X}" cy="${yr}" r="5" class="${dotClass}"/>` + text(302, yr + 4, m.ready ? m.resultLabel : '—', 'diagram-label');
     svg += text(X - 4, botY + 24, '高度 / ' + (m.unit || ''), 'diagram-small', 'end');
@@ -313,11 +314,22 @@
     return {
       positions: a, goals: b,
       velocities: a.map((_, i) => previous?.velocities[i] || 0),
-      value: () => { let i = 0; return to.replace(numberPattern, () => String(a[i++])); }
+      // SVG geometry does not need sub-pixel strings with 15 decimal places.
+      value: () => { let i = 0; return to.replace(numberPattern, () => String(Number(a[i++].toFixed(4)))); }
     };
   }
   function effectMarkup() {
-    return `<svg class="diagram-effects" viewBox="0 0 440 242" aria-hidden="true"><path class="diagram-route-scan" opacity="0"/><g class="diagram-target-rings"><circle r="8"/><circle r="16"/></g>${[0, 1, 2].map(() => '<g class="diagram-tracer"><path class="diagram-trail"/><circle class="diagram-tracer-glow" r="6"/><circle class="diagram-tracer-core" r="2"/></g>').join('')}</svg>`;
+    return `<svg class="diagram-effects" viewBox="0 0 440 242" aria-hidden="true"><path class="diagram-route-scan" pathLength="1" stroke-dasharray="0 1" opacity="0"/><g class="diagram-target-rings"><circle r="8"/><circle r="16"/></g>${[0, 1, 2].map(() => '<g class="diagram-tracer"><path class="diagram-trail"/><circle class="diagram-tracer-glow" r="6"/><circle class="diagram-tracer-core" r="2"/></g>').join('')}</svg>`;
+  }
+  function collectEffects(container, kind) {
+    return {
+      route: container.querySelector(kind === 'gauge' ? '.diagram-gauge-fill' : '[data-geometry]'),
+      scan: container.querySelector('.diagram-route-scan'),
+      rings: [...container.querySelector('.diagram-target-rings').children],
+      tracers: [...container.querySelectorAll('.diagram-tracer')].map(node => ({ node, trail: node.querySelector('path'), dots: [...node.querySelectorAll('circle')] })),
+      routeLength: null,
+      scanPath: null
+    };
   }
   function stopAmbient(record) {
     if (record?.effectFrame) cancelAnimationFrame(record.effectFrame);
@@ -325,7 +337,7 @@
   }
   function startAmbient(container) {
     const record = animations.get(container);
-    if (!record || record.effectFrame || !container.isConnected || document.hidden || record.inView === false || motionPreference.matches || (!record.ready && !record.frame) || (record.paused && !record.frame)) return;
+    if (!record || !record.effects || record.effectFrame || !container.isConnected || document.hidden || record.inView === false || motionPreference.matches || (!record.ready && !record.frame) || (record.paused && !record.frame)) return;
     const step = now => {
       record.effectFrame = 0;
       if (animations.get(container) !== record || !container.isConnected) { ambientContainers.delete(container); return; }
@@ -334,32 +346,35 @@
       record.effectTime = now;
       if (!record.paused) record.phase = (record.phase + dt / 4200) % 1;
       if (!record.paused) record.reveal = Math.min(1, record.reveal + dt / 1800);
-      const main = container.querySelector('.dynamic-profile');
-      const route = main.querySelector(record.kind === 'gauge' ? '.diagram-gauge-fill' : '[data-geometry]');
-      const total = route.getTotalLength();
+      const { route, scan, rings, tracers } = record.effects;
+      const total = record.frame ? route.getTotalLength() : (record.effects.routeLength ??= route.getTotalLength());
       const fraction = record.kind === 'gauge' ? Number(route.getAttribute('stroke-dasharray').split(' ')[0]) : 1;
       const point = t => route.getPointAtLength(total * fraction * clamp(t, 0, 1));
-      const scan = container.querySelector('.diagram-route-scan');
+      // Reuse the source path instead of sampling 17 points into a new path each frame.
+      const path = route.tagName.toLowerCase() === 'line'
+        ? `M${route.getAttribute('x1')} ${route.getAttribute('y1')}L${route.getAttribute('x2')} ${route.getAttribute('y2')}`
+        : route.getAttribute('d');
+      if (path !== record.effects.scanPath) { scan.setAttribute('d', path); record.effects.scanPath = path; }
       if (record.reveal < 1) {
-        const extent = 1 - (1 - record.reveal) ** 3;
-        scan.setAttribute('d', Array.from({ length: 17 }, (_, i) => { const p = point(i / 16 * extent); return `${i ? 'L' : 'M'}${p.x} ${p.y}`; }).join(''));
+        const p = record.reveal;
+        const extent = p * p * p * (p * (p * 6 - 15) + 10);
+        scan.setAttribute('stroke-dasharray', `${extent * fraction} 1`);
       }
       scan.setAttribute('opacity', String(Math.sin(Math.PI * record.reveal) * .65));
       const end = point(1);
-      const rings = container.querySelector('.diagram-target-rings');
-      rings.setAttribute('transform', `translate(${end.x} ${end.y})`);
-      [...rings.children].forEach((ring, i) => {
+      rings[0].parentNode.setAttribute('transform', `translate(${end.x} ${end.y})`);
+      rings.forEach((ring, i) => {
         const p = (record.phase * 2 + i * .5) % 1;
         ring.setAttribute('r', String(5 + p * 16));
-        ring.setAttribute('opacity', String((1 - p) ** 2 * .5));
+        ring.setAttribute('opacity', String(Math.sin(Math.PI * p) ** 2 * .45));
       });
-      container.querySelectorAll('.diagram-tracer').forEach((tracer, i) => {
+      tracers.forEach((tracer, i) => {
         const progress = (record.phase + i / 3) % 1;
         const t = record.kind === 'wind' ? 1 - progress : progress;
         const p = point(t), tail = point(t + (record.kind === 'wind' ? .045 : -.045));
-        tracer.setAttribute('opacity', String(Math.sin(Math.PI * progress) ** 2));
-        tracer.querySelector('path').setAttribute('d', `M${tail.x} ${tail.y}L${p.x} ${p.y}`);
-        tracer.querySelectorAll('circle').forEach(dot => { dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); });
+        tracer.node.setAttribute('opacity', String(Math.sin(Math.PI * progress) ** 2));
+        tracer.trail.setAttribute('d', `M${tail.x} ${tail.y}L${p.x} ${p.y}`);
+        tracer.dots.forEach(dot => { dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); });
       });
       if ((record.ready && !record.paused) || record.frame) record.effectFrame = requestAnimationFrame(step);
       else record.effectTime = null;
@@ -397,7 +412,7 @@
     previous?.details?.forEach(animation => animation.cancel());
     const reducedMotion = motionPreference;
     const sameCard = previous?.cardId === next.cardId;
-    const record = { cardId: next.cardId, kind: next.kind, ready: next.ready, model: next, frame: 0, channels: new Map(), phase: previous?.phase || 0, reveal: 1, paused: previous?.paused || false, inView: previous?.inView, effectFrame: 0, effectTime: null };
+    const record = { cardId: next.cardId, kind: next.kind, ready: next.ready, model: next, frame: 0, channels: new Map(), phase: previous?.phase || 0, reveal: 1, paused: previous?.paused || false, inView: previous?.inView, effectFrame: 0, effectTime: null, effects: null };
     animations.set(container, record);
     container.dataset.state = next.ready ? 'ready' : 'empty';
     delete container.dataset.animating;
@@ -428,9 +443,13 @@
     const current = canvas.firstElementChild;
     if (!current || !sameCard) {
       canvas.replaceChildren(target);
+      record.effects = collectEffects(container, record.kind);
       startAmbient(container);
       return;
     }
+    record.effects = previous.effects;
+    record.effects.routeLength = null;
+    record.effects.scanPath = null;
     const tweens = [];
     const sourceNodes = [current, ...current.querySelectorAll('*')];
     const targetNodes = [target, ...target.querySelectorAll('*')];
@@ -451,7 +470,8 @@
     if (!tweens.length) { startAmbient(container); return; }
     container.dataset.animating = 'true';
     let last = performance.now(), elapsed = 0;
-    const omega = next.ready ? 11 : 13;
+    // Give the 0→1 reveal room to breathe while keeping a soft, bounce-free landing.
+    const omega = next.ready ? 8 : 9.5;
     const step = now => {
       if (!container.isConnected || animations.get(container) !== record) return;
       const dt = Math.max(0, Math.min((now - last) / 1000, .05));
@@ -491,9 +511,9 @@
     record.details = [];
     const groups = [container.querySelectorAll('.diagram-label, .diagram-angle, .diagram-gauge-value'), container.querySelectorAll('.diagram-metrics > div')];
     groups.forEach((nodes, group) => nodes.forEach((node, i) => {
-      record.details.push(node.animate([{ opacity: .2, translate: `0 ${group ? 6 : 3}px` }, { opacity: 1, translate: '0 0' }], { duration: 700, delay: 70 + i * 65 + group * 80, fill: 'backwards', easing: 'cubic-bezier(.22, 1, .36, 1)' }));
+      record.details.push(node.animate([{ opacity: .2, translate: `0 ${group ? 6 : 3}px` }, { opacity: 1, translate: '0 0' }], { duration: 850, delay: 80 + i * 55 + group * 60, fill: 'backwards', easing: 'cubic-bezier(.45, 0, .15, 1)' }));
     }));
-    record.details.push(container.querySelector('.diagram-canvas').animate([{ boxShadow: 'inset 0 0 0 1px rgba(45, 124, 246, .22)' }, { boxShadow: 'inset 0 0 0 1px rgba(45, 124, 246, 0)' }], { duration: 1400, easing: 'ease-out' }));
+    record.details.push(container.querySelector('.diagram-frame').animate([{ opacity: .8 }, { opacity: .25 }], { duration: 1100, easing: 'cubic-bezier(.45, 0, .15, 1)' }));
     record.reveal = 0;
   }
   const api = { model, svg, render, format };

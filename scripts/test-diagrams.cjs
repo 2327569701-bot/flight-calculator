@@ -165,3 +165,13 @@ test('altitude results stay consistent when expressed in metric units', () => {
   assert.equal(metricPA.metrics[0].value.includes('m'), true);
   units.setPreset('mixed');
 });
+
+test('VREF weight inputs use the same physical weight in kg and lb', () => {
+  units.setPreset('mixed');
+  const kg = calculation('vapp3', { wght: 140000 / 2.20462, flap: '30' });
+  units.setPreset('imperial');
+  const lb = calculation('vapp3', { wght: 140000, flap: '30' });
+  assert.equal(kg.val, 128);
+  assert.equal(lb.val, 128);
+  units.setPreset('mixed');
+});

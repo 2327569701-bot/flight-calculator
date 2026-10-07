@@ -35,7 +35,7 @@ const META = {
   tod: { title: '下降顶点', short: '下降顶点', en: 'TOP OF DESCENT', tag: 'TOD', desc: '提前规划下降距离，把握开始下降的时机。', modes: ['计算 TOD 距离', '计算下降时机'], labels: ['开始下降的距离', '距开始下降的时间'], note: '先根据高度差估算下降距离，再结合地速计算抵达下降顶点所需的时间。' },
   tri: { title: '速度 · 距离 · 时间', short: '三角计算', en: 'SPEED, DISTANCE & TIME', tag: 'SDT', desc: '已知任意两项，轻松求出第三项。', modes: ['三角计算'], labels: ['计算结果'], note: '输入速度、距离、时间中的任意两项，并将需要计算的一项留空。时间以分钟为单位。' },
   atmo: { title: '大气 · 空速', short: '大气·空速', en: 'ATMOSPHERE & AIRSPEED', tag: 'ATMO', desc: '压力高度、密度高度与真实空速，把天气与高度换算清楚。', modes: ['压力高度', '密度高度', '真实空速'], labels: ['压力高度', '密度高度', '真实空速'], note: '压力高度由 QNH 与机场标高求得；密度高度按 ISA 偏差估算（约每 °C 119 ft）；真实空速采用每千英尺约 2% 的经验修正、忽略压缩性，仅供模拟飞行参考。' },
-  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: '当前计算模型为 B737-800。输入参数后，可结合下方已有手册摘录查看计算说明。' },
+  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: 'VAPP 风修正规则及下方参考摘录尚待与适用的 B737-800 手册核对，仅供模拟飞行；不可用于实际飞行。' },
   manual: { title: '飞行手册', short: '飞行手册', en: 'FLIGHT LIBRARY', tag: 'FCOM', desc: '常用参考随手可查，专注每一个飞行阶段。' },
   history: { title: '历史记录', short: '历史记录', en: 'CALCULATION HISTORY', tag: 'HIST', desc: '本次飞行算过的内容都在这里，可复制、导出或打印。' }
 };
@@ -248,7 +248,7 @@ function fieldMarkup(input, card) {
   return `<div class="form-group"><label class="form-label" id="${labelId}" for="${id}">${label}</label>${control}${help}</div>`;
 }
 function referenceMarkup(open = false) {
-  return `<details class="manual-reference"${open ? ' open' : ''}><summary>手册参考 · B737-800 进近速度</summary><div class="manual-content">${MANUAL_CONTENT}</div></details>`;
+  return `<details class="manual-reference"${open ? ' open' : ''}><summary>待核对的进近速度参考摘录</summary><div class="manual-content"><p><strong>校核提示：</strong>以下规则不是已核实的 B737-800 FCOM。当前顺风修正的说明与计算结果符号也不一致；仅供模拟飞行，不可用于实际飞行。</p>${MANUAL_CONTENT}</div></details>`;
 }
 function renderMain() {
   if (state.section === 'history') { renderHistoryPage(); return; }

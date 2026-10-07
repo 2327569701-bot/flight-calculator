@@ -3,16 +3,6 @@
 
 var MANUAL_CONTENT = '<h4>VAPP (进近速度)</h4><p>VAPP 是飞行员在最后进近时使用的目标速度，通常等于 VREF 加上风修正和阵风修正。</p><p><strong>公式：</strong>VAPP = VREF + 风修正 + 阵风修正</p><h4>风修正规则</h4><table><tr><th>风向</th><th>修正方式</th><th>限制</th></tr><tr><td>顶风</td><td>减速 = 风速除以2</td><td>最大 20 kts</td></tr><tr><td>顺风</td><td>加速 = 风速</td><td>最大 10 kts</td></tr><tr><td>侧风</td><td>不加不减</td><td>-</td></tr></table><h4>阵风修正</h4><p>阵风修正直接加上阵风值，不设上限。</p><h4>VREF 参考值 (B737-800)</h4><table><tr><th>襟翼</th><th>参考重量 VREF</th></tr><tr><td>Flap 15</td><td>~137 kts</td></tr><tr><td>Flap 25</td><td>~131 kts</td></tr><tr><td>Flap 30</td><td>~128 kts</td></tr><tr><td>Flap 40</td><td>~122 kts</td></tr></table><p><em>注：VREF 随重量变化，每 10,000 lbs 约变化 5 kts。</em></p>';
 
-var PDF_SHORTCUTS = {
-  VAPP: 'VAPP (进近速度) = VREF + 风修正 + 阵风修正\n\n风修正规则:\n- 顶风: -风速/2 (最大20kts)\n- 顺风: +风速 (最大10kts)\n- 侧风: 无修正',
-  VREF: 'VREF 参考值 (B737-800, 140000lbs):\n\nFlap 15: ~137 kts\nFlap 25: ~131 kts\nFlap 30: ~128 kts\nFlap 40: ~122 kts\n\n注: 每10000lbs约变化5kts',
-  LIMIT: '速度限制:\n- VMO: 340 kts / 0.82 M\n- MMO: 0.82 M / 340 kts\n- 起落架收放: 270 kts\n- 襟翼放出: 250 kts',
-  WEIGHT: '重量限制:\n- 最大起飞: 79,015 kg\n- 最大着陆: 66,361 kg\n- 最大无燃油: 62,369 kg\n- 基准重量VREF: 140,000 lbs',
-  FLAP: '襟翼速度限制:\n- Flap 1: 210 kts\n- Flap 5-40: 250 kts'
-};
-
-var PDF_URL = '1.FCOM_EN_B737-800_波音 (2020.04.19).pdf';
-
 var UnitSystem = {
   STANDARD: { distance: 'NM', speed: 'kt', altitude: 'ft', verticalSpeed: 'ft/min', weight: 'kg' },
   PRESETS: {
@@ -175,13 +165,13 @@ var Calcs = {
       desc = '顶风修正: -' + corr + ' kts';
     } else if (dir === 'tailwind') {
       corr = Math.min(wind, 10);
-      desc = '顺风修正: +' + corr + ' kts';
+      desc = '顺风当前计算: -' + corr + ' kts（待核对）';
     } else {
       desc = '侧风修正: 无';
     }
     var g = gust > 0 ? gust : 0;
     var value = vref - corr + g;
-    var detail = desc + (g ? ' | 阵风: +' + g + ' kts' : '');
+    var detail = desc + (g ? ' | 阵风: +' + g + ' kts' : '') + ' | 风修正规则待核对，仅供模拟飞行';
     return { ok: true, val: value, unit: 'kts', advice: '进近速度 VAPP = ' + value + ' kts', detail: detail };
   },
 
@@ -201,7 +191,8 @@ var Calcs = {
   vrefCalc: function (weight, flap) {
     if (!weight || weight <= 0) return { ok: false, msg: '请输入有效的重量' };
     var base = { '15': 137, '25': 131, '30': 128, '40': 122 };
-    var weightLbs = UnitSystem.toStd('weight', weight);
+    // Weight is standardized as kg by UnitSystem; the reference table is in lb.
+    var weightLbs = UnitSystem.toStd('weight', weight) * 2.20462;
     var v = (base[flap] || 130) + Math.round((weightLbs - 140000) / 10000 * 5);
     return { ok: true, val: v, unit: 'kts', advice: '基于 ' + weightLbs.toLocaleString() + ' lbs 和襟翼 ' + flap + '，VREF = ' + v + ' kts' };
   },
