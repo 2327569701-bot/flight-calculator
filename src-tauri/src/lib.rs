@@ -47,29 +47,8 @@ fn save_aircraft_preset(name: String, config: serde_json::Value) -> Result<Strin
 }
 
 #[tauri::command]
-fn save_unit_preset(name: String, config: serde_json::Value) -> Result<String, String> {
-    if config.to_string().len() > 65_536 { return Err("档案内容过大".into()); }
-    let profiles_dir = ensure_profiles_dir();
-    let filename = profile_filename(&name)?;
-    let file_path = profiles_dir.join("units").join(format!("{}.json", filename));
-    let data = PresetData {
-        name: name.clone(),
-        config,
-        saved_at: chrono_now(),
-    };
-    let json = serde_json::to_string_pretty(&data).map_err(|e| e.to_string())?;
-    fs::write(&file_path, json).map_err(|e| e.to_string())?;
-    Ok(file_path.to_string_lossy().to_string())
-}
-
-#[tauri::command]
 fn list_aircraft_presets() -> Vec<serde_json::Value> {
     list_presets("aircraft")
-}
-
-#[tauri::command]
-fn list_unit_presets() -> Vec<serde_json::Value> {
-    list_presets("units")
 }
 
 fn list_presets(subdir: &str) -> Vec<serde_json::Value> {
@@ -177,13 +156,6 @@ fn import_all(data: serde_json::Value) -> Result<usize, String> {
     let count = files.len();
     for (path, content) in files { fs::write(path, content).map_err(|e| e.to_string())?; }
     Ok(count)
-}
-
-#[tauri::command]
-fn open_profiles_folder() -> Result<String, String> {
-    let profiles_dir = ensure_profiles_dir();
-    open::that(&profiles_dir).map_err(|e| e.to_string())?;
-    Ok(profiles_dir.to_string_lossy().to_string())
 }
 
 // The ChartFox page uses a separate webview without application permissions.
@@ -335,14 +307,11 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             save_aircraft_preset,
-            save_unit_preset,
             list_aircraft_presets,
-            list_unit_presets,
             load_preset,
             delete_preset,
             export_all,
             import_all,
-            open_profiles_folder,
             open_chartfox_window,
             dock_chartfox_window,
             open_chartfox_browser,

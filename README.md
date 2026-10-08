@@ -36,7 +36,7 @@
 
 从 [GitHub Releases](https://github.com/2327569701-bot/flight-calculator/releases) 下载最新版 Windows x64 免安装 EXE，双击运行。系统需有 WebView2 Runtime。发布页同时提供 SHA-256 校验文件。本项目只分发一个免安装 EXE。
 
-从源码运行时，`npm start` 或 `启动飞行计算器.bat` 会优先启动刚构建的 `src-tauri/target/release/flight-calculator.exe`。
+从源码运行时，先构建，再执行 `npm start` 启动 `src-tauri/target/release/flight-calculator.exe`。
 
 ## 开发与验证
 
@@ -55,7 +55,7 @@ npm run test:desktop
 npm run profile:motion
 ```
 
-浏览器测试使用 Playwright；在已有 Edge 的 Windows 电脑上，可先设置 `PLAYWRIGHT_CHANNEL=msedge`。构建命令先清空并重建 `dist`，再生成独立 EXE。请保留 `src-tauri/Cargo.lock` 以固定已验证的依赖版本。
+浏览器测试使用 Playwright；在已有 Edge 的 Windows 电脑上，可先设置 `PLAYWRIGHT_CHANNEL=msedge`。构建命令先清空并重建未纳入版本控制的 `dist`，再生成独立 EXE。请保留 `src-tauri/Cargo.lock` 以固定已验证的依赖版本。
 
 `test:desktop` 和 `profile:motion` 运行刚构建的 Windows EXE。性能脚本分别记录点击到过渡就绪的耗时，以及玻璃球动画实际运行时的帧间隔；浏览器帧间隔不能单独证明 CPU 或 GPU 利用率余量。
 

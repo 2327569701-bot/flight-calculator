@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Generated frontend
+dist/
+
 # Build outputs (binary files)
 *.exe
 *.msi
