@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 // Start from a clean folder so removed/renamed files never linger in the bundle.
 fs.rmSync(dist, { recursive: true, force: true });
-const files = ['index.html', 'css/workspace.css', 'js/calculator-data.js', 'js/flight-diagrams.js', 'js/workspace.js'];
+const files = ['index.html', 'css/workspace.css', 'js/calculator-data.js', 'js/flight-diagrams.js', 'js/flight-session.js', 'js/session-page.js', 'js/workspace.js'];
 for (const file of files) {
   const destination = path.join(dist, file);
   fs.mkdirSync(path.dirname(destination), { recursive: true });

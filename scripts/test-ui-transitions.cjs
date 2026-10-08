@@ -60,6 +60,7 @@ const server = http.createServer((request, response) => {
     assert.equal(await page.locator('.sidebar-settings').evaluate(node => document.activeElement === node), true);
     console.log('PASS sidebar settings and apply still update the calculator');
 
+    await page.locator('nav a[href="#glide"]').click();
     await page.locator('#g1-alt1').fill('1234');
     await page.locator('nav a[href="#vs"]').click();
     await page.getByRole('heading', { name: '垂直速度' }).waitFor();
@@ -72,7 +73,8 @@ const server = http.createServer((request, response) => {
       const saved = animations.map(animation => ({ animation, time: animation.currentTime, running: animation.playState === 'running' }));
       animations.forEach(animation => animation.pause());
       const samples = [];
-      for (const time of [0, 152, 304, 456, 608, 759]) {
+      const duration = Number.parseFloat(document.documentElement.style.getPropertyValue('--liquid-duration')) || 570;
+      for (const time of [0, .2, .4, .6, .8, .99].map(part => part * duration)) {
         animations.forEach(animation => { animation.currentTime = time; });
         await new Promise(resolve => requestAnimationFrame(resolve));
         const read = side => {

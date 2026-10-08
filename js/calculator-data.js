@@ -1,7 +1,7 @@
 // Calculator definitions, unit conversions and pure formulas. UI lives in workspace.js.
 'use strict';
 
-var MANUAL_CONTENT = '<h4>VAPP (进近速度)</h4><p>VAPP 是飞行员在最后进近时使用的目标速度，通常等于 VREF 加上风修正和阵风修正。</p><p><strong>公式：</strong>VAPP = VREF + 风修正 + 阵风修正</p><h4>风修正规则</h4><table><tr><th>风向</th><th>修正方式</th><th>限制</th></tr><tr><td>顶风</td><td>减速 = 风速除以2</td><td>最大 20 kts</td></tr><tr><td>顺风</td><td>加速 = 风速</td><td>最大 10 kts</td></tr><tr><td>侧风</td><td>不加不减</td><td>-</td></tr></table><h4>阵风修正</h4><p>阵风修正直接加上阵风值，不设上限。</p><h4>VREF 参考值 (B737-800)</h4><table><tr><th>襟翼</th><th>参考重量 VREF</th></tr><tr><td>Flap 15</td><td>~137 kts</td></tr><tr><td>Flap 25</td><td>~131 kts</td></tr><tr><td>Flap 30</td><td>~128 kts</td></tr><tr><td>Flap 40</td><td>~122 kts</td></tr></table><p><em>注：VREF 随重量变化，每 10,000 lbs 约变化 5 kts。</em></p>';
+var MANUAL_CONTENT = '<h4>VAPP (进近速度)</h4><p>本工具只把你提供的 VREF 与修正值相加。修正值应来自适用机型、构型和操作方式的资料。</p><p><strong>公式：</strong>VAPP = VREF + 手动修正值。</p><p>旧版本内置的 B737-800 风修正及 VREF 估算没有经过适用手册核实，V4 不再自动使用。</p>';
 
 var UnitSystem = {
   STANDARD: { distance: 'NM', speed: 'kt', altitude: 'ft', verticalSpeed: 'ft/min', weight: 'kg' },
@@ -100,9 +100,9 @@ var Calcs = {
 
   verticalSpeed: function (gs, angle) {
     if (!gs || gs <= 0) return { ok: false, msg: '地速必须大于零' };
-    if (!angle || angle <= 0) return { ok: false, msg: '下滑角必须大于零' };
+    if (!angle || angle <= 0 || angle >= 90) return { ok: false, msg: '下滑角须在 0° 与 90° 之间' };
     var gsKt = UnitSystem.toStd('speed', gs);
-    var vsFtMin = gsKt * (6076 / 60) * Math.sin(angle * Math.PI / 180);
+    var vsFtMin = gsKt * (6076 / 60) * Math.tan(angle * Math.PI / 180);
     // Convert the standard ft/min result into the selected vertical-speed unit.
     var disp = UnitSystem.fromStd('verticalSpeed', Math.abs(vsFtMin));
     var unit = UnitSystem.getLabel('verticalSpeed');
@@ -111,7 +111,8 @@ var Calcs = {
   },
 
   todDistance: function (alt, angle) {
-    if (!alt) return { ok: false, msg: '请输入高度差' };
+    if (!alt || alt <= 0) return { ok: false, msg: '高度差必须大于零' };
+    if (angle !== undefined && angle !== null && (angle <= 0 || angle >= 90)) return { ok: false, msg: '下降角须在 0° 与 90° 之间' };
     angle = angle || 3;
     var altFt = UnitSystem.toStd('altitude', alt);
     var dist = (altFt / Math.tan(angle * Math.PI / 180)) / 6076;
@@ -121,7 +122,7 @@ var Calcs = {
   },
 
   todTiming: function (dist, gs) {
-    if (!dist) return { ok: false, msg: '请输入TOD距离' };
+    if (!dist || dist <= 0) return { ok: false, msg: 'TOD 距离必须大于零' };
     if (!gs || gs <= 0) return { ok: false, msg: '地速必须大于零' };
     var distNm = UnitSystem.toStd('distance', dist);
     var gsKt = UnitSystem.toStd('speed', gs);
@@ -156,45 +157,24 @@ var Calcs = {
     return { ok: true, val: t + ' 分', advice: '时间 ' + t + ' 分钟' };
   },
 
-  vapp: function (vref, wind, dir, gust) {
-    if (!vref || vref <= 0) return { ok: false, msg: '请输入有效的VREF值' };
-    if (!dir) return { ok: false, msg: '请选择风向' };
-    var corr = 0, desc = '';
-    if (dir === 'headwind') {
-      corr = Math.min(Math.round(wind / 2), 20);
-      desc = '顶风修正: -' + corr + ' kts';
-    } else if (dir === 'tailwind') {
-      corr = Math.min(wind, 10);
-      desc = '顺风当前计算: -' + corr + ' kts（待核对）';
-    } else {
-      desc = '侧风修正: 无';
-    }
-    var g = gust > 0 ? gust : 0;
-    var value = vref - corr + g;
-    var detail = desc + (g ? ' | 阵风: +' + g + ' kts' : '') + ' | 风修正规则待核对，仅供模拟飞行';
-    return { ok: true, val: value, unit: 'kts', advice: '进近速度 VAPP = ' + value + ' kts', detail: detail };
+  vapp: function (vref, correction) {
+    if (!Number.isFinite(vref) || vref <= 0) return { ok: false, msg: '请输入有效的 VREF' };
+    if (!Number.isFinite(correction) || correction < 0) return { ok: false, msg: '请输入非负的手动修正值' };
+    var value = vref + correction;
+    return { ok: true, val: value, unit: 'kts', advice: 'VAPP = ' + value + ' kts', detail: 'VREF 与手动修正值相加；请按适用机型资料确定修正值' };
   },
 
   windComp: function (speed, angle) {
-    if (!speed || speed < 0) return { ok: false, msg: '请输入有效的风速' };
-    if (angle === null || angle === undefined) return { ok: false, msg: '请输入风向角' };
+    if (!Number.isFinite(speed) || speed < 0) return { ok: false, msg: '请输入有效的风速' };
+    if (!Number.isFinite(angle) || angle < -180 || angle > 180) return { ok: false, msg: '风向角须在 -180° 与 180° 之间' };
     var rad = Math.abs(angle) * Math.PI / 180;
     var hw = Math.round(Math.cos(rad) * speed);
     var xw = Math.round(Math.sin(rad) * speed);
-    var isHead = angle >= -90 && angle <= 90;
+    var isHead = hw >= 0;
     var advice = isHead
       ? '顶风: ' + Math.abs(hw) + ' kts, 侧风: ' + xw + ' kts'
       : '顺风: ' + Math.abs(hw) + ' kts, 侧风: ' + xw + ' kts';
-    return { ok: true, val: Math.abs(hw) + ' / ' + xw, unit: '顶风 / 侧风 (kts)', advice: advice };
-  },
-
-  vrefCalc: function (weight, flap) {
-    if (!weight || weight <= 0) return { ok: false, msg: '请输入有效的重量' };
-    var base = { '15': 137, '25': 131, '30': 128, '40': 122 };
-    // Weight is standardized as kg by UnitSystem; the reference table is in lb.
-    var weightLbs = UnitSystem.toStd('weight', weight) * 2.20462;
-    var v = (base[flap] || 130) + Math.round((weightLbs - 140000) / 10000 * 5);
-    return { ok: true, val: v, unit: 'kts', advice: '基于 ' + weightLbs.toLocaleString() + ' lbs 和襟翼 ' + flap + '，VREF = ' + v + ' kts' };
+    return { ok: true, val: Math.abs(hw) + ' / ' + xw, unit: (isHead ? '顶风' : '顺风') + ' / 侧风 (kts)', advice: advice };
   },
 
   // --- V3 atmosphere & airspeed ---
@@ -338,14 +318,12 @@ var CALCULATOR_SECTIONS = [
   {
     id: 'vapp', name: 'VAPP', manual: true, cards: [
       {
-        id: 'vapp1', title: 'VAPP 计算', sub: 'VREF + 风修正',
+        id: 'vapp1', title: 'VAPP 计算', sub: 'VREF + 手动修正',
         inputs: [
           { id: 'vref', label: 'VREF (kts)', type: 'number' },
-          { id: 'wind', label: '风速 (kts)', type: 'number' },
-          { id: 'wdir', label: '风向', type: 'select', opts: ['', '顶风', '顺风', '侧风'], vals: ['', 'headwind', 'tailwind', 'crosswind'] },
-          { id: 'gust', label: '阵风 (kts)', type: 'number', def: 0 }
+          { id: 'correction', label: '手动修正值 (kts)', type: 'number', def: 0 }
         ],
-        btn: '计算 VAPP', fn: function (d) { return Calcs.vapp(d.vref, d.wind, d.wdir, d.gust); }
+        btn: '计算 VAPP', fn: function (d) { return Calcs.vapp(d.vref, d.correction); }
       },
       {
         id: 'vapp2', title: '风分量计算', sub: '顶风/顺风/侧风',
@@ -354,14 +332,6 @@ var CALCULATOR_SECTIONS = [
           { id: 'wangle', label: '风向角', type: 'number' }
         ],
         btn: '计算分量', fn: function (d) { return Calcs.windComp(d.winds, d.wangle); }
-      },
-      {
-        id: 'vapp3', title: 'VREF 参考值', sub: '重量 + 襟翼',
-        inputs: [
-          { id: 'wght', label: '飞机重量', type: 'weight' },
-          { id: 'flap', label: '襟翼', type: 'select', opts: ['Flap 15', 'Flap 25', 'Flap 30', 'Flap 40'], vals: ['15', '25', '30', '40'] }
-        ],
-        btn: '计算 VREF', fn: function (d) { return Calcs.vrefCalc(d.wght, d.flap); }
       }
     ]
   },

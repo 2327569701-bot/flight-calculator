@@ -25,18 +25,20 @@ const ICONS = {
   lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
   wind: '<path d="M3 8h12a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h5a3 3 0 1 1-3 3"/>',
   history: '<path d="M3.5 12a8.5 8.5 0 1 0 2.8-6.3"/><path d="M3.5 4.5V8H7"/><path d="M12 8v4l3 2"/>',
+  session: '<path d="M8 3h8l1 2h3v16H4V5h3l1-2Z"/><path d="M8 10h8M8 14h8M8 18h5"/>',
   copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   download: '<path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 21h16"/>',
   trash: '<path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
   print: '<path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8" rx="1"/><path d="M6 16H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/>'
 };
 const META = {
+  session: { title: '本次飞行', short: '本次飞行', en: 'FLIGHT WORKSPACE', tag: 'FLIGHT', desc: '输入一次，按需带入计算器。' },
   glide: { title: '下滑角计算', short: '下滑角', en: 'DESCENT & APPROACH', tag: 'GLIDE', desc: '把握每一段下降，让进近更从容。', modes: ['计算下滑角', '反算水平距离'], labels: ['所需下滑角', '所需水平距离'], note: '输入高度差与水平距离，估算下滑角；也可以通过目标下滑角反算距离。' },
   vs: { title: '垂直速度', short: '垂直速度', en: 'VERTICAL SPEED', tag: 'V/S', desc: '结合地速与下滑角，规划平稳的下降率。', modes: ['计算垂直速度'], labels: ['目标垂直速度'], note: '使用地速与目标下滑角进行计算。图中的飞行剖面仅用于说明参数关系。' },
   tod: { title: '下降顶点', short: '下降顶点', en: 'TOP OF DESCENT', tag: 'TOD', desc: '提前规划下降距离，把握开始下降的时机。', modes: ['计算 TOD 距离', '计算下降时机'], labels: ['开始下降的距离', '距开始下降的时间'], note: '先根据高度差估算下降距离，再结合地速计算抵达下降顶点所需的时间。' },
   tri: { title: '速度 · 距离 · 时间', short: '三角计算', en: 'SPEED, DISTANCE & TIME', tag: 'SDT', desc: '已知任意两项，轻松求出第三项。', modes: ['三角计算'], labels: ['计算结果'], note: '输入速度、距离、时间中的任意两项，并将需要计算的一项留空。时间以分钟为单位。' },
   atmo: { title: '大气 · 空速', short: '大气·空速', en: 'ATMOSPHERE & AIRSPEED', tag: 'ATMO', desc: '压力高度、密度高度与真实空速，把天气与高度换算清楚。', modes: ['压力高度', '密度高度', '真实空速'], labels: ['压力高度', '密度高度', '真实空速'], note: '压力高度由 QNH 与机场标高求得；密度高度按 ISA 偏差估算（约每 °C 119 ft）；真实空速采用每千英尺约 2% 的经验修正、忽略压缩性，仅供模拟飞行参考。' },
-  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '集中查看进近速度、风分量与 VREF 参考值。', modes: ['VAPP', '风分量', 'VREF'], labels: ['目标进近速度', '风分量', 'VREF 参考值'], note: 'VAPP 风修正规则及下方参考摘录尚待与适用的 B737-800 手册核对，仅供模拟飞行；不可用于实际飞行。' },
+  vapp: { title: '进近速度', short: '进近速度', en: 'APPROACH SPEED', tag: 'VAPP', desc: '输入手册给出的 VREF 与修正值，并计算风分量。', modes: ['VAPP', '风分量'], labels: ['目标进近速度', '风分量'], note: 'V4 不自动套用未经核实的机型风修正规则。请按适用机型资料提供 VREF 与修正值；仅供模拟飞行。' },
   manual: { title: '飞行手册', short: '飞行手册', en: 'FLIGHT LIBRARY', tag: 'FCOM', desc: '常用参考随手可查，专注每一个飞行阶段。' },
   charts: { title: '在线航图', short: '在线航图', en: 'CHARTFOX', tag: 'CHARTS', desc: '在飞行计算器中打开 ChartFox，使用自己的 VATSIM 账号查阅航图。' },
   history: { title: '历史记录', short: '历史记录', en: 'CALCULATION HISTORY', tag: 'HIST', desc: '本次飞行算过的内容都在这里，可复制、导出或打印。' }
@@ -49,10 +51,10 @@ const INPUT_HINTS = {
   qnh: ['例如 1013', '修正海平面气压（altimeter setting）'], qnhu: ['', '在 hPa 与美制 inHg 之间切换'], felev: ['例如 1500', '机场场面的海拔高度'],
   palta: ['例如 5000', '由 QNH 与标高算出的压力高度'], oat: ['例如 25', '机场或当前高度的外界气温'],
   ias: ['例如 140', '空速表指示速度（校准空速）'], paltas: ['例如 30000', '计划飞行高度对应的压力高度'],
-  vref: ['例如 135', ''], wind: ['例如 10', ''], gust: ['例如 0', ''], winds: ['例如 15', ''], wangle: ['例如 30', '相对跑道方向的夹角'], wght: ['输入飞机重量', '']
+  vref: ['例如 135', '请按适用机型资料填写'], correction: ['例如 5', '请按适用机型资料确定修正值'], winds: ['例如 15', ''], wangle: ['例如 30', '风向与跑道方向的真北夹角']
 };
-const fixedUnits = { angle1: '°', angle2: '°', angle3: '°', wangle: '°', tme: 'min', oat: '°C', vref: 'kts', wind: 'kts', gust: 'kts', winds: 'kts' };
-const state = { section: 'glide', modes: {}, drafts: {}, results: {}, settings: null, pdfUrl: null, pdfName: '' };
+const fixedUnits = { angle1: '°', angle2: '°', angle3: '°', wangle: '°', tme: 'min', oat: '°C', vref: 'kts', correction: 'kts', winds: 'kts' };
+const state = { section: 'session', modes: {}, drafts: {}, results: {}, settings: null, pdfUrl: null, pdfName: '' };
 const $ = id => document.getElementById(id);
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.info}</svg>`;
@@ -113,6 +115,7 @@ function recordHistory(card, data, result) {
     card: card.id,
     title: META[section.id].short,
     mode: META[section.id].modes[mode],
+    sourceVersion: 4,
     inputs: inputsText,
     result: resultText,
     signature
@@ -120,7 +123,8 @@ function recordHistory(card, data, result) {
   persistHistory(arr.slice(0, HISTORY_MAX));
 }
 function entryPlainText(e) {
-  return `【${e.title} · ${e.mode}】${new Date(e.t).toLocaleString()}\n输入：${e.inputs || '—'}\n结果：${e.result}`;
+  const legacy = e.section === 'vapp' && (!e.sourceVersion || e.sourceVersion < 4) ? ' · 旧版算法' : '';
+  return `【${e.title} · ${e.mode}${legacy}】${new Date(e.t).toLocaleString()}\n输入：${e.inputs || '—'}\n结果：${e.result}`;
 }
 async function copyText(text) {
   try {
@@ -188,9 +192,9 @@ function renderHistoryPage() {
   if (!arr.length) {
     html += `<section class="panel history-empty">${icon('history')}<h2>还没有计算记录</h2><p>完成任意一次计算后，结果会自动保存在这里，方便你回顾、复制或导出。</p></section>`;
   } else {
-    html += `<div class="history-list">` + arr.map(e => `<section class="panel history-entry" data-id="${e.id}">
+    html += `<div class="history-list">` + arr.map(e => `<section class="panel history-entry" data-id="${escapeHtml(e.id)}">
         <div class="history-main">
-          <div class="history-head"><strong>${escapeHtml(e.title)}</strong><span class="history-mode">${escapeHtml(e.mode)}</span><span class="history-time">${escapeHtml(new Date(e.t).toLocaleString())}</span></div>
+          <div class="history-head"><strong>${escapeHtml(e.title)}</strong><span class="history-mode">${escapeHtml(e.mode)}${e.section === 'vapp' && (!e.sourceVersion || e.sourceVersion < 4) ? ' · 旧版算法' : ''}</span><span class="history-time">${escapeHtml(new Date(e.t).toLocaleString())}</span></div>
           <div class="history-inputs">${escapeHtml(e.inputs || '—')}</div>
         </div>
         <div class="history-result">${escapeHtml(e.result)}</div>
@@ -227,10 +231,11 @@ function renderHistoryPage() {
 }
 
 function renderNav() {
+  const sessionItem = `<a class="nav-item${state.section === 'session' ? ' active' : ''}" href="#session" ${state.section === 'session' ? 'aria-current="page"' : ''} title="本次飞行">${icon('session')}<span class="nav-label">本次飞行</span><span class="nav-en">FLIGHT</span></a><div class="nav-divider"></div>`;
   const items = CALCULATOR_SECTIONS.map((section, i) => `${i === 5 ? '<div class="nav-divider"></div>' : ''}<a class="nav-item${state.section === section.id ? ' active' : ''}" href="#${section.id}" ${state.section === section.id ? 'aria-current="page"' : ''} title="${META[section.id].short}">${icon(section.id)}<span class="nav-label">${META[section.id].short}</span><span class="nav-en">${META[section.id].tag}</span></a>`).join('');
   const historyItem = `<div class="nav-divider"></div><a class="nav-item${state.section === 'history' ? ' active' : ''}" href="#history" ${state.section === 'history' ? 'aria-current="page"' : ''} title="历史记录">${icon('history')}<span class="nav-label">历史记录</span><span class="nav-en">HIST</span></a>`;
   const chartsItem = `<div class="nav-divider"></div><a class="nav-item${state.section === 'charts' ? ' active' : ''}" href="#charts" ${state.section === 'charts' ? 'aria-current="page"' : ''} title="在线航图">${icon('charts')}<span class="nav-label">在线航图</span><span class="nav-en">CHARTS</span></a>`;
-  $('nav').innerHTML = items + chartsItem + historyItem;
+  $('nav').innerHTML = sessionItem + items + chartsItem + historyItem;
   $('nav').querySelector('[href="#charts"]').addEventListener('click', () => {
     if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
   });
@@ -254,7 +259,7 @@ function fieldMarkup(input, card) {
   return `<div class="form-group"><label class="form-label" id="${labelId}" for="${id}">${label}</label>${control}${help}</div>`;
 }
 function referenceMarkup(open = false) {
-  return `<details class="manual-reference"${open ? ' open' : ''}><summary>待核对的进近速度参考摘录</summary><div class="manual-content"><p><strong>校核提示：</strong>以下规则不是已核实的 B737-800 FCOM。当前顺风修正的说明与计算结果符号也不一致；仅供模拟飞行，不可用于实际飞行。</p>${MANUAL_CONTENT}</div></details>`;
+  return `<details class="manual-reference"${open ? ' open' : ''}><summary>进近速度计算说明</summary><div class="manual-content"><p><strong>使用提示：</strong>VREF 和修正值由适用机型资料确定；本工具仅作加法与风分量换算，不能用于实际飞行。</p>${MANUAL_CONTENT}</div></details>`;
 }
 const CHARTFOX_URL = 'https://chartfox.org/';
 async function openChartfox() {
@@ -285,6 +290,14 @@ async function openChartfoxBrowser() {
     toast('浏览器未能打开');
   }
 }
+async function dockChartfox() {
+  try {
+    await window.__TAURI__.core.invoke('dock_chartfox_window');
+  } catch (error) {
+    console.error('ChartFox docking failed:', error);
+    toast(String(error).includes('空间不足') ? '屏幕空间不足，请手动并排摆放窗口' : '无法自动并排航图窗口');
+  }
+}
 function renderChartsPage() {
   const desktop = !!window.__TAURI__?.core?.invoke;
   $('main').innerHTML =
@@ -292,12 +305,27 @@ function renderChartsPage() {
     '<section class="panel charts-panel"><div class="charts-visual">' + icon('charts') + '<span>CHARTFOX</span></div><div class="charts-copy"><span class="eyebrow">ONLINE CHARTS</span><h2>航图就在工作台旁边</h2>' +
     '<p>ChartFox 将在' + (desktop ? '飞行计算器的独立窗口' : '浏览器') + '中打开。登录与航图查看都在 ChartFox 官网完成，飞行计算器不会读取你的账号密码或复制航图。</p>' +
     '<div class="charts-actions"><button type="button" class="button button-primary" id="openChartfox">' + icon('charts') + (desktop ? '打开航图窗口' : '打开 ChartFox') + '</button>' +
-    (desktop ? '<button type="button" class="button button-secondary" id="openChartfoxBrowser">' + icon('arrow') + '在浏览器打开</button>' : '') + '</div>' +
+    (desktop ? '<button type="button" class="button button-secondary" id="dockChartfox">' + icon('grid') + '并排查看</button><button type="button" class="button button-secondary" id="openChartfoxBrowser">' + icon('arrow') + '在浏览器打开</button>' : '') + '</div>' +
     '<p class="charts-note">由 ChartFox 提供的第三方服务，仅供模拟飞行。部分航图若无法在内置窗口显示，可使用浏览器入口。</p></div></section>';
   $('openChartfox').addEventListener('click', openChartfox);
+  if (desktop) $('dockChartfox').addEventListener('click', dockChartfox);
   if (desktop) $('openChartfoxBrowser').addEventListener('click', openChartfoxBrowser);
 }
 function renderMain() {
+  if (state.section === 'session') {
+    SessionPage.render($('main'), {
+      units: UnitSystem, escape: escapeHtml, icon, toast,
+      openCard: (cardId, values) => {
+        const section = CALCULATOR_SECTIONS.find(item => item.cards.some(card => card.id === cardId));
+        if (!section) return;
+        state.drafts[cardId] = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, String(value)]));
+        state.modes[section.id] = section.cards.findIndex(card => card.id === cardId);
+        location.hash = section.id;
+      },
+      onUnitsChanged: () => { state.drafts = {}; state.results = {}; renderNav(); }
+    }).catch(error => { console.error('Flight session could not render:', error); toast('飞行会话暂不可用'); });
+    return;
+  }
   if (state.section === 'history') { renderHistoryPage(); return; }
   if (state.section === 'charts') { renderChartsPage(); return; }
   const meta = META[state.section];
@@ -367,10 +395,10 @@ function changeMode(mode) {
   const oldAnchor = animate ? document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect() : null;
   captureDraft();
   const update = () => { state.modes[state.section] = mode; renderMain(); document.querySelector('[role="tab"][aria-selected="true"]').focus(); };
-  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), panel, 560, null, () => $('calculatorPanel'))) return;
+  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), panel, 460, null, () => $('calculatorPanel'))) return;
   const ghost = animate ? panel.cloneNode(true) : null;
   update();
-  if (animate) animateNavigation(ghost, oldRect, oldAnchor, document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), $('calculatorPanel'), 560);
+  if (animate) animateNavigation(ghost, oldRect, oldAnchor, document.querySelector('.mode-tab[aria-selected="true"]').getBoundingClientRect(), $('calculatorPanel'), 460);
 }
 function renderResult(animate = false) {
   const card = currentCard();
@@ -480,10 +508,10 @@ function animateNavigation(ghost, oldRect, oldAnchor, newAnchor, main = $('main'
   Object.assign(main.style, { opacity: '0', overflow: 'hidden', background: 'var(--bg)', transformOrigin: 'center center', willChange: 'transform, opacity' });
   main.inert = true;
   const animate = (element, frames, easing = 'linear') => element.animate(frames, { duration, easing, fill: 'both' });
-  const oldFlight = 'cubic-bezier(.55, .02, .35, 1)';
-  const oldShape = 'cubic-bezier(.2, .6, .28, 1)';
-  const newFlight = 'cubic-bezier(.18, .58, .3, 1)';
-  const newShape = 'cubic-bezier(.52, .02, .2, 1)';
+  const oldFlight = 'cubic-bezier(.45, .12, .28, 1)';
+  const oldShape = 'cubic-bezier(.23, .72, .31, 1)';
+  const newFlight = 'cubic-bezier(.2, .55, .31, 1)';
+  const newShape = 'cubic-bezier(.43, .12, .24, 1)';
   const oldOffset = `${outgoing.dx}px ${outgoing.dy}px`;
   const oldSize = `${outgoing.sx} ${outgoing.sy}`;
   const newOffset = `${incoming.dx}px ${incoming.dy}px`;
@@ -491,16 +519,16 @@ function animateNavigation(ghost, oldRect, oldAnchor, newAnchor, main = $('main'
   const animations = [
     animate(ghost, [{ translate: '0 0' }, { translate: oldOffset }], oldFlight),
     animate(ghost, [{ scale: '1', borderRadius: '0px' }, { scale: oldSize, borderRadius: '999px' }], oldShape),
-    animate(ghost, [{ opacity: 1, offset: 0 }, { opacity: .66, offset: .22 }, { opacity: 0, offset: .44 }, { opacity: 0, offset: 1 }]),
+    animate(ghost, [{ opacity: 1, offset: 0 }, { opacity: 0, offset: .38 }, { opacity: 0, offset: 1 }], 'cubic-bezier(.3, .8, .5, 1)'),
     animate(oldOrb, [{ translate: '0 0' }, { translate: oldOffset }], oldFlight),
     animate(oldOrb, [{ scale: '1' }, { scale: oldSize }], oldShape),
-    animate(oldOrb, [{ opacity: .08, offset: 0 }, { opacity: .48, offset: .24 }, { opacity: .55, offset: .52 }, { opacity: .48, offset: .82 }, { opacity: 0, offset: 1 }]),
+    animate(oldOrb, [{ opacity: .08, offset: 0 }, { opacity: .65, offset: .42 }, { opacity: 0, offset: 1 }], 'ease-in-out'),
     animate(newOrb, [{ translate: newOffset }, { translate: '0 0' }], newFlight),
     animate(newOrb, [{ scale: newSize }, { scale: '1' }], newShape),
-    animate(newOrb, [{ opacity: .9, offset: 0 }, { opacity: .52, offset: .22 }, { opacity: .17, offset: .42 }, { opacity: 0, offset: .68 }, { opacity: 0, offset: 1 }]),
+    animate(newOrb, [{ opacity: .9, offset: 0 }, { opacity: .08, offset: .52 }, { opacity: 0, offset: 1 }], 'cubic-bezier(.35, .05, .45, 1)'),
     animate(main, [{ translate: newOffset }, { translate: '0 0' }], newFlight),
     animate(main, [{ scale: newSize, borderRadius: '999px' }, { scale: '1', borderRadius: '0px' }], newShape),
-    animate(main, [{ opacity: 0, offset: 0 }, { opacity: .08, offset: .18 }, { opacity: .57, offset: .34 }, { opacity: 1, offset: .6 }, { opacity: 1, offset: 1 }])
+    animate(main, [{ opacity: 0, offset: 0 }, { opacity: .42, offset: .24 }, { opacity: 1, offset: .52 }, { opacity: 1, offset: 1 }], 'cubic-bezier(.35, .08, .25, 1)')
   ];
   const motion = { animations, nodes: [ghost, oldOrb, newOrb], main, mainStyle, wasInert };
   navMotion = motion;
@@ -555,7 +583,7 @@ function startViewNavigation(update, oldRect, oldAnchor, getNewAnchor, main, dur
 function navigate() {
   const id = location.hash.slice(1);
   if (id === 'main' && $('main').childElementCount) return;
-  const next = META[id] ? id : 'glide';
+  const next = META[id] ? id : 'session';
   cancelNavMotion();
   if (next === state.section && $('main').childElementCount) return;
   const previous = state.section;
@@ -563,15 +591,20 @@ function navigate() {
   const animate = main.childElementCount && !reducedMotion() && typeof main.animate === 'function';
   const oldRect = animate ? main.getBoundingClientRect() : null;
   const oldAnchor = animate ? navAnchor(previous) : null;
+  const distance = oldRect && oldAnchor ? Math.hypot(
+    oldRect.left + oldRect.width / 2 - oldAnchor.left - oldAnchor.width / 2,
+    oldRect.top + oldRect.height / 2 - oldAnchor.top - oldAnchor.height / 2
+  ) : 740;
+  const duration = Math.round(Math.max(520, Math.min(640, 420 + distance * .18)));
   captureDraft();
   if (window.scrollY) window.scrollTo(0, 0);
   const update = () => { state.section = next; renderNav(); renderMain(); };
-  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => navAnchor(next), main, 760, () => {
+  if (animate && startViewNavigation(update, oldRect, oldAnchor, () => navAnchor(next), main, duration, () => {
     if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
   })) return;
   const ghost = animate ? main.cloneNode(true) : null;
   update();
-  if (animate && animateNavigation(ghost, oldRect, oldAnchor, navAnchor(next), main, 760, () => {
+  if (animate && animateNavigation(ghost, oldRect, oldAnchor, navAnchor(next), main, duration, () => {
     if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
   })) return;
   if (state.section === 'charts' && window.__TAURI__?.core?.invoke) openChartfox();
@@ -613,8 +646,8 @@ function closeSettings() {
     dialog.animate([
       { transform, opacity, borderRadius: radius },
       { transform: settingsOrigin(dialog), opacity: 0, borderRadius: '999px' }
-    ], { duration: 370, easing: 'cubic-bezier(.5, 0, .65, 1)', fill: 'forwards' }),
-    form.animate([{ opacity: formOpacity }, { opacity: 0 }], { duration: 180, fill: 'forwards' })
+    ], { duration: 320, easing: 'cubic-bezier(.5, .08, .65, 1)', fill: 'forwards' }),
+    form.animate([{ opacity: formOpacity }, { opacity: 0 }], { duration: 230, fill: 'forwards' })
   ];
   const motion = { phase: 'closing', animations };
   settingsMotion = motion;
@@ -646,10 +679,10 @@ function openSettings(event) {
     dialog.animate([
       { transform: settingsOrigin(dialog), opacity: .3, borderRadius: '999px' },
       { transform: 'translate(0px, 0px) scale(1, 1)', opacity: 1, borderRadius: '22px' }
-    ], { duration: 650, easing: 'cubic-bezier(.18, .55, .3, 1)', fill: 'both' }),
+    ], { duration: 510, easing: 'cubic-bezier(.2, .56, .3, 1)', fill: 'both' }),
     dialog.querySelector('form').animate([
-      { opacity: 0, offset: 0 }, { opacity: 0, offset: .52 }, { opacity: 1, offset: .83 }, { opacity: 1, offset: 1 }
-    ], { duration: 650, fill: 'both' })
+      { opacity: 0, offset: 0 }, { opacity: .08, offset: .32 }, { opacity: 1, offset: 1 }
+    ], { duration: 510, easing: 'cubic-bezier(.24, .35, .36, 1)', fill: 'both' })
   ];
   const motion = { phase: 'opening', animations };
   settingsMotion = motion;
@@ -702,6 +735,7 @@ function applyTheme(theme) {
 }
 function init() {
   try { UnitSystem.init(); } catch { UnitSystem.current = { ...UnitSystem.PRESETS.mixed }; }
+  SessionPage.init();
   // Recover gracefully from invalid or obsolete locally saved unit selections.
   if (!UnitSystem.current || !Object.keys(UnitSystem.OPTIONS).every(type => UnitSystem.OPTIONS[type].some(option => option.value === UnitSystem.current[type]))) UnitSystem.current = { ...UnitSystem.PRESETS.mixed };
   let theme;
@@ -736,6 +770,18 @@ function init() {
     renderMain(); $('pdfDialog').showModal();
     event.target.value = '';
   });
+  // Lay out the calculator templates before the first visible transition.
+  // The initial page has not painted yet, so cold CSS/SVG layout stays outside
+  // the glass-sphere motion without reducing its visual detail.
+  if (!location.hash || location.hash === '#session') {
+    for (const section of ['glide', 'vs', 'tod', 'tri', 'atmo', 'vapp']) {
+      state.section = section;
+      renderMain();
+      $('main').getBoundingClientRect();
+      $('main').replaceChildren();
+    }
+    state.section = 'session';
+  }
   window.addEventListener('hashchange', navigate);
   navigate();
 }

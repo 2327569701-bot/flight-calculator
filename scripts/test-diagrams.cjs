@@ -22,9 +22,8 @@ const cases = {
   t1: { alt3: 30000, angle3: 3 },
   t2: { dist2: 90, gs2: 450 },
   r1: { spd: 120, dst: 60, tme: null },
-  vapp1: { vref: 135, wind: 10, wdir: 'headwind', gust: 0 },
+  vapp1: { vref: 135, correction: 5 },
   vapp2: { winds: 20, wangle: 30 },
-  vapp3: { wght: 60000, flap: '30' },
   a1: { qnh: 1013, qnhu: 'hpa', felev: 1500 },
   a2: { palta: 5000, oat: 25 },
   a3: { ias: 140, paltas: 10000 }
@@ -98,13 +97,11 @@ test('wind vectors distinguish left/right and headwind/tailwind quadrants', () =
 test('gauge follows computed speed, including zero, without fabricating safety limits', () => {
   const first = build('vapp1', cases.vapp1);
   const second = build('vapp1', { ...cases.vapp1, vref: 165 });
-  assert.equal(first.speed, 130);
-  assert.equal(second.speed, 160);
+  assert.equal(first.speed, 140);
+  assert.equal(second.speed, 170);
   assert.notEqual(diagrams.svg(first), diagrams.svg(second));
   assert.match(first.caption, /不代表速度限制/);
-  const zero = diagrams.model('vapp3', { ok: true, val: 0, unit: 'kts', inputs: cases.vapp3 }, units);
-  assert.equal(zero.ready, true);
-  assert.doesNotMatch(diagrams.svg(zero), /NaN|Infinity/);
+  assert.match(first.metrics[1].value, /5 kts/);
 });
 test('out-of-range geometry and extreme numeric values do not produce invalid SVG', () => {
   for (const angle of [0, 90, 120, -3]) {
@@ -166,12 +163,8 @@ test('altitude results stay consistent when expressed in metric units', () => {
   units.setPreset('mixed');
 });
 
-test('VREF weight inputs use the same physical weight in kg and lb', () => {
-  units.setPreset('mixed');
-  const kg = calculation('vapp3', { wght: 140000 / 2.20462, flap: '30' });
-  units.setPreset('imperial');
-  const lb = calculation('vapp3', { wght: 140000, flap: '30' });
-  assert.equal(kg.val, 128);
-  assert.equal(lb.val, 128);
-  units.setPreset('mixed');
+test('VAPP uses only the operator-provided VREF and correction', () => {
+  const value = calculation('vapp1', { vref: 135, correction: 7 });
+  assert.equal(value.val, 142);
+  assert.equal(value.ok, true);
 });

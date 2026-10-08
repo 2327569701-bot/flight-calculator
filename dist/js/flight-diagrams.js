@@ -12,8 +12,8 @@
   };
   const amount = (value, unit = '', digits = 1) => `${format(value, digits)}${unit ? ' ' + unit : ''}`;
   const metric = (label, value, unit = '', computed = false) => ({ label, value: typeof value === 'number' ? amount(value, unit) : value, computed });
-  const titles = { g1: '下滑剖面', g2: '下滑剖面', v1: '下降矢量', t1: '下降规划', t2: '距 TOD 时间轴', r1: '航程关系', vapp1: '进近速度仪表', vapp2: '风分量矢量', vapp3: 'VREF 参考仪表', a1: '压力高度标尺', a2: '密度高度标尺', a3: '真实空速仪表' };
-  const types = { g1: 'descent', g2: 'descent', v1: 'vertical', t1: 'descent', t2: 'timeline', r1: 'journey', vapp1: 'gauge', vapp2: 'wind', vapp3: 'gauge', a1: 'altscale', a2: 'altscale', a3: 'gauge' };
+  const titles = { g1: '下滑剖面', g2: '下滑剖面', v1: '下降矢量', t1: '下降规划', t2: '距 TOD 时间轴', r1: '航程关系', vapp1: '进近速度仪表', vapp2: '风分量矢量', a1: '压力高度标尺', a2: '密度高度标尺', a3: '真实空速仪表' };
+  const types = { g1: 'descent', g2: 'descent', v1: 'vertical', t1: 'descent', t2: 'timeline', r1: 'journey', vapp1: 'gauge', vapp2: 'wind', a1: 'altscale', a2: 'altscale', a3: 'gauge' };
 
   function model(cardId, result, units) {
     const m = { cardId, kind: types[cardId], title: titles[cardId], ready: false, status: result ? '请检查输入' : '等待计算', metrics: [], caption: '计算后，图形与标注将随结果更新。' };
@@ -65,7 +65,7 @@
       m.longitudinal = Math.cos(radians(m.angle)) >= 0 ? '顶风' : '顺风';
       m.metrics = [metric('来风角', m.angle, '°'), metric(m.longitudinal, m.headwind, 'kts', true), metric('侧风', m.crosswind, 'kts', true)];
       m.caption = '机头朝上；蓝色矢量指向来风方向，虚线为分量投影。';
-      if (!(m.windSpeed > 0) || ![m.angle, m.headwind, m.crosswind].every(Number.isFinite)) m.ready = false;
+      if (!(m.windSpeed >= 0) || ![m.angle, m.headwind, m.crosswind].every(Number.isFinite)) m.ready = false;
     } else if (cardId === 'a1' || cardId === 'a2') {
       if (cardId === 'a1') {
         m.base = d.felev; m.result = n;
@@ -95,9 +95,9 @@
       m.caption = '每升高 1000 ft 约增加 2%；为经验估算，忽略高速压缩性。';
       if (!Number.isFinite(m.speed) || m.speed < 0 || !(d.ias > 0)) m.ready = false;
     } else {
-      m.speed = n; m.reference = cardId === 'vapp1' ? d.vref : null;
-      m.gaugeLabel = cardId === 'vapp1' ? 'VAPP' : 'VREF';
-      m.metrics = cardId === 'vapp1' ? [metric('VREF', d.vref, 'kts'), metric('风速 / 阵风', `${format(d.wind || 0)} / ${format(d.gust || 0)} kts`), metric('VAPP', n, 'kts', true)] : [metric('飞机重量', d.wght, label('weight')), metric('襟翼', 'Flap ' + d.flap), metric('VREF', n, 'kts', true)];
+      m.speed = n; m.reference = d.vref;
+      m.gaugeLabel = 'VAPP';
+      m.metrics = [metric('VREF', d.vref, 'kts'), metric('手动修正', d.correction, 'kts'), metric('VAPP', n, 'kts', true)];
       m.caption = '刻度随数值自适应，仅显示读数，不代表速度限制。';
       if (!Number.isFinite(m.speed) || m.speed < 0) m.ready = false;
     }
@@ -243,7 +243,7 @@
     svg += `<circle cx="126" cy="161" r="5" transform="rotate(${referenceAngle} 220 161)" opacity="${hasReference ? 1 : 0}" class="diagram-reference-dot"><title>${hasReference ? (m.referenceLabel || 'VREF') + ' ' + escape(amount(m.reference, m.speedUnit || 'kts')) : ''}</title></circle>`;
     svg += line(220, 161, 152, 161, 'diagram-needle', `data-geometry="needle" transform="rotate(${fraction * 180} 220 161)"`) + dot(220, 161);
     svg += text(220, 199, (m.gaugeLabel || (m.cardId === 'vapp1' ? 'VAPP' : 'VREF')) + ' · ' + (m.ready ? amount(m.speed, m.speedUnit || 'kts') : '—'), 'diagram-gauge-value', 'middle');
-    svg += text(220, 227, m.cardId === 'vapp1' ? '○ VREF 参考点   /   指针：VAPP' : m.cardId === 'a3' ? '○ IAS 参考点   /   指针：TAS' : '指针：当前重量与襟翼对应的 VREF', 'diagram-small', 'middle');
+    svg += text(220, 227, m.cardId === 'vapp1' ? '○ VREF 参考点   /   指针：VAPP' : '○ IAS 参考点   /   指针：TAS', 'diagram-small', 'middle');
     return svg;
   }
   function wind(m, motion) {

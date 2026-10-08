@@ -15,9 +15,8 @@ const cases = [
   ['atmo', 0, { qnh: 1000, qnhu: 'hpa', felev: 1500 }],
   ['atmo', 1, { palta: 5000, oat: 25 }],
   ['atmo', 2, { ias: 140, paltas: 10000 }],
-  ['vapp', 0, { vref: 135, wind: 10, wdir: 'headwind', gust: 0 }],
-  ['vapp', 1, { winds: 20, wangle: 30 }],
-  ['vapp', 2, { wght: 60000, flap: '30' }]
+  ['vapp', 0, { vref: 135, correction: 5 }],
+  ['vapp', 1, { winds: 20, wangle: 30 }]
 ];
 const server = http.createServer((req, res) => {
   const file = path.resolve(root, '.' + (req.url === '/' ? '/index.html' : req.url.split('?')[0]));
