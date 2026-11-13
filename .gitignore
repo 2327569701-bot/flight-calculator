@@ -1,31 +1,18 @@
-# Dependencies
-node_modules/
-
-# Build outputs (binary files)
-*.exe
-*.msi
-*.dmg
-*.app
-*.deb
-*.rpm
-
-# Tauri
-src-tauri/target/
-src-tauri/gen/
-src-tauri/Cargo.lock
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
+# macOS
 .DS_Store
-Thumbs.db
 
-# Logs
-*.log
+# Xcode 用户级数据（每个人不一样，不提交）
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
 
-# Screenshots
-screenshot*.png
+# 构建产物
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+.swiftpm/
+
+# 编辑器
+.vscode/

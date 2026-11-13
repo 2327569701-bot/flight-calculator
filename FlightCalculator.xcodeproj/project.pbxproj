@@ -1,0 +1,357 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D2738A3EBAD986A1DAC3F0F /* DiagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9644ADB561F362790DFBBB5 /* DiagramView.swift */; };
+		3D6CE8E2B8E7F96E47A5572B /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46B1BF16D57423352293CD9 /* App.swift */; };
+		4804207CA7CDAF370337756A /* ChartsPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 410A13BB394899C632FF3DA0 /* ChartsPage.swift */; };
+		4ADD205F18841816F1C4EF0C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 976DC391737A466A50942BAC /* ContentView.swift */; };
+		4B08EA2642F90F9F9A5E9BF6 /* CalculatorData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BEC8238467954404AA9A764 /* CalculatorData.swift */; };
+		52F2998DA4E1A7CBFB901CEB /* SessionPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3BFD9E2ADB43C26A88FA0 /* SessionPage.swift */; };
+		548146813C3AC99DF3458F60 /* Stores.swift in Sources */ = {isa = PBXBuildFile; fileRef = 567680FD3CB28EFF58601E31 /* Stores.swift */; };
+		56F0063353ABDBE683662CBB /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2071AE8C9BCE6CC03C80724E /* Components.swift */; };
+		6F1B4C291AF98DBDDE8451C0 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3C95CEC17EFEE625AD1BAD /* Theme.swift */; };
+		83FC8D31E66FCC918562B6C7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0288C486C8C28C151CABC953 /* SettingsView.swift */; };
+		8F6F79C40E10792072BD31C5 /* Units.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A10927C8C1762809F3F8D /* Units.swift */; };
+		A353DCA8D6E218769DFF77C0 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D79008B3D291A1E1DF304F /* AppModel.swift */; };
+		BEAB4DFAB7CA4F86C83D4D7F /* CalculatorPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CACB1B903EC64F0455E87 /* CalculatorPage.swift */; };
+		E6A528FBBF44B563D22A717E /* FlightSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2302F806CFDBA4DD2DCB468 /* FlightSession.swift */; };
+		E9A2E6F81CE9D99DE7939EE9 /* HistoryPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71EE9FF4680C943A1A27230C /* HistoryPage.swift */; };
+		F6DEA35F4542E9675E5F2E79 /* ManualPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C465C958814285D0DCD1171D /* ManualPage.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0288C486C8C28C151CABC953 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		0E5A10927C8C1762809F3F8D /* Units.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Units.swift; sourceTree = "<group>"; };
+		11B3BFD9E2ADB43C26A88FA0 /* SessionPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPage.swift; sourceTree = "<group>"; };
+		1BEC8238467954404AA9A764 /* CalculatorData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorData.swift; sourceTree = "<group>"; };
+		2071AE8C9BCE6CC03C80724E /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		20B9E9D7B3EE301D4A009977 /* Flight Calculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Flight Calculator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		27D79008B3D291A1E1DF304F /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		410A13BB394899C632FF3DA0 /* ChartsPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartsPage.swift; sourceTree = "<group>"; };
+		567680FD3CB28EFF58601E31 /* Stores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stores.swift; sourceTree = "<group>"; };
+		71EE9FF4680C943A1A27230C /* HistoryPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPage.swift; sourceTree = "<group>"; };
+		976DC391737A466A50942BAC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A9644ADB561F362790DFBBB5 /* DiagramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramView.swift; sourceTree = "<group>"; };
+		B46B1BF16D57423352293CD9 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		C20CACB1B903EC64F0455E87 /* CalculatorPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPage.swift; sourceTree = "<group>"; };
+		C465C958814285D0DCD1171D /* ManualPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualPage.swift; sourceTree = "<group>"; };
+		DC3C95CEC17EFEE625AD1BAD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		E1B33770E46D96AC4BBE932B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E2302F806CFDBA4DD2DCB468 /* FlightSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightSession.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0C781983B21F15F1220688F1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				20B9E9D7B3EE301D4A009977 /* Flight Calculator.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1CC71F7607A3C72575BBEA3E /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				B46B1BF16D57423352293CD9 /* App.swift */,
+				27D79008B3D291A1E1DF304F /* AppModel.swift */,
+				1BEC8238467954404AA9A764 /* CalculatorData.swift */,
+				C20CACB1B903EC64F0455E87 /* CalculatorPage.swift */,
+				410A13BB394899C632FF3DA0 /* ChartsPage.swift */,
+				2071AE8C9BCE6CC03C80724E /* Components.swift */,
+				976DC391737A466A50942BAC /* ContentView.swift */,
+				A9644ADB561F362790DFBBB5 /* DiagramView.swift */,
+				E2302F806CFDBA4DD2DCB468 /* FlightSession.swift */,
+				71EE9FF4680C943A1A27230C /* HistoryPage.swift */,
+				E1B33770E46D96AC4BBE932B /* Info.plist */,
+				C465C958814285D0DCD1171D /* ManualPage.swift */,
+				11B3BFD9E2ADB43C26A88FA0 /* SessionPage.swift */,
+				0288C486C8C28C151CABC953 /* SettingsView.swift */,
+				567680FD3CB28EFF58601E31 /* Stores.swift */,
+				DC3C95CEC17EFEE625AD1BAD /* Theme.swift */,
+				0E5A10927C8C1762809F3F8D /* Units.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		DDA73BBA2153555EFC5402CB = {
+			isa = PBXGroup;
+			children = (
+				1CC71F7607A3C72575BBEA3E /* Sources */,
+				0C781983B21F15F1220688F1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C30AF20A0BEFF730F7EBE269 /* FlightCalculator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2E43EE6D0A2D0B25ACAA4DD6 /* Build configuration list for PBXNativeTarget "FlightCalculator" */;
+			buildPhases = (
+				9DE0847B74EFADCBA6678B26 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FlightCalculator;
+			packageProductDependencies = (
+			);
+			productName = FlightCalculator;
+			productReference = 20B9E9D7B3EE301D4A009977 /* Flight Calculator.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		242D4953A77BB6A781A64A92 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					C30AF20A0BEFF730F7EBE269 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 4F51E986B440F22815B7DA46 /* Build configuration list for PBXProject "FlightCalculator" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DDA73BBA2153555EFC5402CB;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0C781983B21F15F1220688F1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C30AF20A0BEFF730F7EBE269 /* FlightCalculator */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9DE0847B74EFADCBA6678B26 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D6CE8E2B8E7F96E47A5572B /* App.swift in Sources */,
+				A353DCA8D6E218769DFF77C0 /* AppModel.swift in Sources */,
+				4B08EA2642F90F9F9A5E9BF6 /* CalculatorData.swift in Sources */,
+				BEAB4DFAB7CA4F86C83D4D7F /* CalculatorPage.swift in Sources */,
+				4804207CA7CDAF370337756A /* ChartsPage.swift in Sources */,
+				56F0063353ABDBE683662CBB /* Components.swift in Sources */,
+				4ADD205F18841816F1C4EF0C /* ContentView.swift in Sources */,
+				0D2738A3EBAD986A1DAC3F0F /* DiagramView.swift in Sources */,
+				E6A528FBBF44B563D22A717E /* FlightSession.swift in Sources */,
+				E9A2E6F81CE9D99DE7939EE9 /* HistoryPage.swift in Sources */,
+				F6DEA35F4542E9675E5F2E79 /* ManualPage.swift in Sources */,
+				52F2998DA4E1A7CBFB901CEB /* SessionPage.swift in Sources */,
+				83FC8D31E66FCC918562B6C7 /* SettingsView.swift in Sources */,
+				548146813C3AC99DF3458F60 /* Stores.swift in Sources */,
+				6F1B4C291AF98DBDDE8451C0 /* Theme.swift in Sources */,
+				8F6F79C40E10792072BD31C5 /* Units.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0ECA5BFD5DBF065C8CA8597E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		48F8E633B174B595E5DFD911 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5FC4906424330BEA58687595 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 378RGVA5ZQ;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flc.cz;
+				PRODUCT_NAME = "Flight Calculator";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E64FCA704667BFCE6F8AF2EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 378RGVA5ZQ;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flc.cz;
+				PRODUCT_NAME = "Flight Calculator";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2E43EE6D0A2D0B25ACAA4DD6 /* Build configuration list for PBXNativeTarget "FlightCalculator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5FC4906424330BEA58687595 /* Debug */,
+				E64FCA704667BFCE6F8AF2EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4F51E986B440F22815B7DA46 /* Build configuration list for PBXProject "FlightCalculator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0ECA5BFD5DBF065C8CA8597E /* Debug */,
+				48F8E633B174B595E5DFD911 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 242D4953A77BB6A781A64A92 /* Project object */;
+}
