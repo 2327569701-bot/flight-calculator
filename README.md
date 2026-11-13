@@ -6,7 +6,8 @@
 
 1. 双击 `FlightCalculator.xcodeproj`（或 `xed .`）。
 2. 顶部 Scheme 选 **FlightCalculator**，目标设备选任意 iPhone 模拟器。
-3. 按 `⌘R` 运行。真机运行需在 **Signing & Capabilities** 里选自己的 Team，并把 Bundle Identifier 改成你自己的（默认 `flc.cz.swift`）。
+3. 按 `⌘R` 运行。真机运行需在 **Signing & Capabilities** 里选自己的 Team，并把 Bundle Identifier 改成你自己的（默认 `com.flc.cz`）。
+4. 或ipa包自签/trollstore
 
 > 工程由 `project.yml` 通过 `xcodegen` 生成。改了 `project.yml` 后执行 `xcodegen generate` 重新生成 `.xcodeproj`。
 
